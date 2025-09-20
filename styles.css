@@ -1,246 +1,314 @@
-﻿:root {
-  color-scheme: light;
-}
-
+﻿/* Reset and base styles */
 * {
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
 }
 
-html,
-body {
-  margin: 0;
-  padding: 0;
-  min-height: 100%;
-  font-family: "Inter", "Segoe UI", sans-serif;
-  background: #f6f4f0;
-  color: #1f2933;
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  display: flex;
-  justify-content: center;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.6;
+  color: #2d3748;
+  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+  min-height: 100vh;
 }
 
-.page {
-  width: 100%;
-  max-width: 960px;
-  padding: 24px 16px 64px;
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: 32px;
-  align-items: center;
 }
 
-.hero {
-  width: 100%;
-  max-width: 840px;
+/* Header Styles */
+.header {
   text-align: center;
-  display: flex;
-  flex-direction: column;
+  padding: 40px 20px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  margin-bottom: 30px;
+  position: relative;
+}
+
+.header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.5rem, 8vw, 4rem);
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+}
+
+.subtitle {
+  font-size: clamp(1rem, 4vw, 1.25rem);
+  color: #718096;
+  margin-bottom: 30px;
+  font-weight: 400;
+}
+
+/* Audio Button */
+.audio-btn {
+  display: inline-flex;
+  align-items: center;
   gap: 12px;
-  padding: 32px 24px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 24px 40px rgba(15, 23, 42, 0.08);
-  backdrop-filter: blur(4px);
-}
-
-.hero h1 {
-  margin: 0;
-  font-family: "Playfair Display", "Times New Roman", serif;
-  font-size: clamp(2.5rem, 6vw, 3.5rem);
-  letter-spacing: 2px;
-}
-
-.hero-note {
-  margin: 0;
-  font-size: 1rem;
-  color: #475569;
-}
-
-.audio-button {
-  margin: 8px auto 0;
-  padding: 12px 20px;
-  border-radius: 999px;
+  padding: 16px 32px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
   border: none;
-  font-size: 0.95rem;
+  border-radius: 50px;
+  font-size: 1rem;
   font-weight: 500;
-  background: #1f2933;
-  color: #ffffff;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.audio-button:focus {
-  outline: 3px solid #94a3b8;
-  outline-offset: 2px;
-}
-
-.audio-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 20px rgba(31, 41, 51, 0.18);
-}
-
-.pdf-shell {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-}
-
-.pdf-container {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 24px;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
   position: relative;
-}
-
-.pdf-page {
-  position: relative;
-  width: 100%;
-  max-width: 860px;
-  background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 30px 60px rgba(15, 23, 42, 0.18);
   overflow: hidden;
 }
 
-.pdf-page canvas {
-  width: 100%;
-  display: block;
-  height: auto;
+.audio-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
 }
 
-.pdf-page .annotationLayer {
-  position: absolute;
-  inset: 0;
-  pointer-events: auto;
+.audio-btn:active {
+  transform: translateY(0);
 }
 
-.helper-text {
-  margin: 0;
-  text-align: center;
-  font-size: 0.95rem;
-  color: #475569;
+.audio-btn.playing {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  box-shadow: 0 8px 25px rgba(72, 187, 120, 0.3);
 }
 
-.download-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border-radius: 999px;
-  text-decoration: none;
-  font-weight: 500;
-  color: #1f2933;
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+.audio-btn.playing:hover {
+  box-shadow: 0 12px 35px rgba(72, 187, 120, 0.4);
 }
 
-.download-link:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 18px 32px rgba(15, 23, 42, 0.18);
+.audio-icon {
+  font-size: 1.2em;
+  transition: transform 0.3s ease;
 }
 
-.loader {
+.audio-btn.playing .audio-icon {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+/* PDF Section */
+.pdf-section {
+  flex: 1;
   display: flex;
+  flex-direction: column;
+}
+
+.pdf-container {
+  flex: 1;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  position: relative;
+  min-height: 600px;
+  display: flex;
+  flex-direction: column;
+}
+
+.pdf-viewer {
+  flex: 1;
+  border: none;
+  border-radius: 20px;
+  min-height: 600px;
+  pointer-events: auto;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Ensure PDF interactive elements are clickable */
+.pdf-viewer:focus {
+  outline: 2px solid #667eea;
+  outline-offset: 2px;
+}
+
+/* PDF embed specific styles for better interaction */
+.pdf-container embed {
+  pointer-events: auto !important;
+}
+
+/* Ensure buttons and links in PDF are visible and clickable */
+.pdf-viewer object,
+.pdf-viewer embed {
+  pointer-events: auto !important;
+}
+
+/* Fallback styles */
+.pdf-fallback {
+  display: none;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 32px 0;
-  color: #475569;
-}
-
-.spinner {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: 4px solid rgba(148, 163, 184, 0.35);
-  border-top-color: #1f2933;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.error-message {
-  padding: 24px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.9);
-  color: #b91c1c;
+  padding: 60px 20px;
   text-align: center;
+  color: #718096;
 }
 
-.annotationLayer a,
-.annotationLayer button {
-  opacity: 0;
+.pdf-fallback p {
+  margin-bottom: 20px;
+  font-size: 1.1rem;
 }
 
-@media (max-width: 600px) {
-  .page {
-    padding: 16px 12px 48px;
-    gap: 24px;
+.download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: #667eea;
+  color: white;
+  text-decoration: none;
+  border-radius: 25px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.download-btn:hover {
+  background: #5a67d8;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 30px 20px;
+  margin-top: 30px;
+}
+
+.footer-text {
+  font-size: 1.1rem;
+  color: #718096;
+  font-weight: 500;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 15px;
   }
+  
+  .header {
+    padding: 30px 15px;
+    margin-bottom: 20px;
+  }
+  
+  .header h1 {
+    font-size: clamp(2rem, 10vw, 3rem);
+  }
+  
+  .audio-btn {
+    padding: 14px 28px;
+    font-size: 0.95rem;
+  }
+  
+  .pdf-container {
+    min-height: 500px;
+    border-radius: 15px;
+  }
+  
+  .pdf-viewer {
+    border-radius: 15px;
+    min-height: 500px;
+  }
+}
 
-  .hero {
-    padding: 24px 18px;
+@media (max-width: 480px) {
+  .container {
+    padding: 10px;
+  }
+  
+  .header {
+    padding: 25px 12px;
+  }
+  
+  .audio-btn {
+    padding: 12px 24px;
+    font-size: 0.9rem;
+  }
+  
+  .audio-icon {
+    font-size: 1.1em;
+  }
+  
+  .pdf-container {
+    min-height: 400px;
     border-radius: 12px;
   }
-
-  .pdf-page {
+  
+  .pdf-viewer {
     border-radius: 12px;
-  }
-
-  .download-link {
-    width: 100%;
-    justify-content: center;
+    min-height: 400px;
   }
 }
 
+/* Dark mode support */
 @media (prefers-color-scheme: dark) {
-  html,
   body {
-    background: #111827;
+    background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
     color: #e2e8f0;
   }
-
-  .hero {
-    background: rgba(30, 41, 59, 0.75);
-    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+  
+  .header {
+    background: rgba(45, 55, 72, 0.95);
   }
-
-  .hero-note {
-    color: #cbd5f5;
-  }
-
-  .audio-button {
-    background: #f1f5f9;
-    color: #0f172a;
-  }
-
-  .pdf-page {
-    background: #0f172a;
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.55);
-  }
-
-  .helper-text {
-    color: #cbd5f5;
-  }
-
-  .download-link {
-    background: rgba(30, 41, 59, 0.8);
+  
+  .header h1 {
     color: #e2e8f0;
   }
+  
+  .subtitle {
+    color: #a0aec0;
+  }
+  
+  .pdf-container {
+    background: #2d3748;
+  }
+  
+  .footer-text {
+    color: #a0aec0;
+  }
+}
 
-  .spinner {
-    border-top-color: #f1f5f9;
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .audio-btn {
+    border: 2px solid currentColor;
+  }
+  
+  .pdf-container {
+    border: 2px solid #2d3748;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .audio-btn.playing .audio-icon {
+    animation: none;
   }
 }

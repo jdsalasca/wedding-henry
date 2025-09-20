@@ -2,41 +2,58 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Invitacion Henry y Liliana</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invitación Henry & Liliana</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf_viewer.min.css">
   <link rel="stylesheet" href="styles.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 <body>
-  <main class="page">
-    <header class="hero">
+  <div class="container">
+    <!-- Header Section -->
+    <header class="header">
       <h1>Henry & Liliana</h1>
-      <p class="hero-note">Con mucha alegria compartimos nuestra invitacion.</p>
-      <button id="audio-toggle" type="button" class="audio-button" aria-pressed="false">
-        Reproducir musica
+      <p class="subtitle">Con mucha alegría compartimos nuestra invitación</p>
+      
+      <!-- Audio Control -->
+      <button id="audio-toggle" class="audio-btn" type="button" aria-label="Reproducir música de fondo">
+        <span class="audio-icon">🎵</span>
+        <span class="audio-text">Reproducir música</span>
       </button>
     </header>
 
-    <section class="pdf-shell">
-      <div id="pdf-container" class="pdf-container" role="region" aria-label="Invitacion en PDF">
-        <div class="loader" id="loader">
-          <div class="spinner" aria-hidden="true"></div>
-          <p>Cargando invitacion...</p>
+    <!-- PDF Section -->
+    <main class="pdf-section">
+      <div class="pdf-container">
+        <embed 
+          src="wedding-invitation.pdf" 
+          type="application/pdf" 
+          width="100%" 
+          height="100%"
+          class="pdf-viewer"
+          title="Invitación de boda Henry y Liliana">
+        
+        <!-- Fallback for browsers that don't support embed -->
+        <div class="pdf-fallback">
+          <p>Tu navegador no puede mostrar el PDF directamente.</p>
+          <a href="wedding-invitation.pdf" download class="download-btn">
+            📄 Descargar invitación
+          </a>
         </div>
       </div>
-      <p class="helper-text">Desliza hacia abajo para leer todo el documento. Los enlaces dentro del PDF permanecen activos.</p>
-      <a class="download-link" href="wedding-invitation.pdf" download>
-        Descargar PDF
-      </a>
-    </section>
-  </main>
+    </main>
 
-  <audio id="audio" loop preload="auto">
+    <!-- Footer -->
+    <footer class="footer">
+      <p class="footer-text">¡Esperamos verte en nuestro día especial!</p>
+    </footer>
+  </div>
+
+  <!-- Audio Element -->
+  <audio id="background-audio" loop preload="auto">
     <source src="wedding-song.mp3" type="audio/mpeg">
+    Tu navegador no soporta la reproducción de audio.
   </audio>
 
   <script src="script.js"></script>

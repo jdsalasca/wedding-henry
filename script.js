@@ -1,204 +1,301 @@
-﻿pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+﻿// Audio functionality
+class WeddingInvitation {
+  constructor() {
+    this.audio = document.getElementById('background-audio');
+    this.audioToggle = document.getElementById('audio-toggle');
+    this.isPlaying = false;
+    
+    this.init();
+  }
 
-const pdfPath = "wedding-invitation.pdf";
-const container = document.getElementById("pdf-container");
-const loader = document.getElementById("loader");
-const audio = document.getElementById("audio");
-const audioToggle = document.getElementById("audio-toggle");
-const linkService = new pdfjsLib.SimpleLinkService();
-const state = {
-  pdf: null,
-  resizeTimer: null,
-  isRendering: false,
-  needsRerender: false,
+  init() {
+    this.setupAudio();
+    this.setupFallback();
+    this.setupAccessibility();
+  }
+
+  setupAudio() {
+    if (!this.audio || !this.audioToggle) {
+      console.warn('Audio elements not found');
+      return;
+    }
+
+    // Update button text and state
+    const updateButton = () => {
+      this.isPlaying = !this.audio.paused;
+      
+      const audioText = this.audioToggle.querySelector('.audio-text');
+      const audioIcon = this.audioToggle.querySelector('.audio-icon');
+      
+      if (this.isPlaying) {
+        this.audioToggle.classList.add('playing');
+        this.audioToggle.setAttribute('aria-pressed', 'true');
+        audioText.textContent = 'Pausar música';
+        audioIcon.textContent = '⏸️';
+      } else {
+        this.audioToggle.classList.remove('playing');
+        this.audioToggle.setAttribute('aria-pressed', 'false');
+        audioText.textContent = 'Reproducir música';
+        audioIcon.textContent = '🎵';
+      }
+    };
+
+    // Handle audio toggle click
+    this.audioToggle.addEventListener('click', async () => {
+      await this.toggleAudio();
+    });
+
+    // Handle audio events
+    this.audio.addEventListener('play', updateButton);
+    this.audio.addEventListener('pause', updateButton);
+    this.audio.addEventListener('ended', updateButton);
+    this.audio.addEventListener('error', (e) => {
+      console.error('Audio error:', e);
+      this.showAudioError();
+    });
+
+    // Initial state
+    updateButton();
+
+    // Auto-play on first user interaction (required by browsers)
+    this.setupAutoPlay();
+  }
+
+  async toggleAudio() {
+    try {
+      if (this.audio.paused) {
+        await this.playAudio();
+      } else {
+        this.audio.pause();
+      }
+    } catch (error) {
+      console.error('Audio toggle error:', error);
+      this.showAudioError();
+    }
+  }
+
+  async playAudio() {
+    try {
+      // Reset audio to beginning if it ended
+      if (this.audio.ended) {
+        this.audio.currentTime = 0;
+      }
+      
+      await this.audio.play();
+    } catch (error) {
+      console.error('Playback failed:', error);
+      
+      // Handle autoplay policy restrictions
+      if (error.name === 'NotAllowedError') {
+        this.showUserInteractionMessage();
+      } else {
+        this.showAudioError();
+      }
+    }
+  }
+
+  setupAutoPlay() {
+    // Try to auto-play on first user interaction
+    const tryAutoPlay = async () => {
+      if (this.audio.paused) {
+        await this.playAudio();
+      }
+      
+      // Remove listeners after first successful interaction
+      document.removeEventListener('click', tryAutoPlay);
+      document.removeEventListener('touchstart', tryAutoPlay);
+      document.removeEventListener('keydown', tryAutoPlay);
+    };
+
+    // Add listeners for user interaction
+    document.addEventListener('click', tryAutoPlay, { once: true });
+    document.addEventListener('touchstart', tryAutoPlay, { once: true });
+    document.addEventListener('keydown', tryAutoPlay, { once: true });
+  }
+
+  setupFallback() {
+    // Check if PDF embed is supported
+    const pdfViewer = document.querySelector('.pdf-viewer');
+    const fallback = document.querySelector('.pdf-fallback');
+    
+    if (!pdfViewer || !fallback) return;
+
+    // Test if embed worked
+    setTimeout(() => {
+      try {
+        // If the embed has no content, show fallback
+        if (pdfViewer.offsetHeight < 100) {
+          pdfViewer.style.display = 'none';
+          fallback.style.display = 'flex';
+        } else {
+          // PDF loaded successfully, ensure interactive elements work
+          this.enhancePDFInteractivity();
+        }
+      } catch (error) {
+        console.warn('PDF embed check failed:', error);
+        pdfViewer.style.display = 'none';
+        fallback.style.display = 'flex';
+      }
+    }, 2000);
+  }
+
+  enhancePDFInteractivity() {
+    // Ensure PDF interactive elements work properly
+    const pdfViewer = document.querySelector('.pdf-viewer');
+    if (!pdfViewer) return;
+
+    // Add event listeners to handle PDF interactions
+    pdfViewer.addEventListener('load', () => {
+      console.log('PDF loaded with interactive elements');
+    });
+
+    // Handle PDF link clicks that might not work in embed
+    pdfViewer.addEventListener('click', (e) => {
+      // Let the PDF handle its own interactions
+      // This is just a fallback for edge cases
+    });
+
+    // Ensure the PDF gets focus for keyboard navigation
+    pdfViewer.setAttribute('tabindex', '0');
+    
+    // Add some styling to ensure interactive elements are visible
+    pdfViewer.style.cssText += `
+      pointer-events: auto !important;
+      user-select: none;
+    `;
+  }
+
+  setupAccessibility() {
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      // Space bar to toggle audio
+      if (e.code === 'Space' && e.target === document.body) {
+        e.preventDefault();
+        this.toggleAudio();
+      }
+    });
+
+    // Focus management
+    this.audioToggle.addEventListener('focus', () => {
+      this.audioToggle.style.outline = '3px solid #667eea';
+      this.audioToggle.style.outlineOffset = '2px';
+    });
+
+    this.audioToggle.addEventListener('blur', () => {
+      this.audioToggle.style.outline = 'none';
+      this.audioToggle.style.outlineOffset = '0';
+    });
+  }
+
+  showUserInteractionMessage() {
+    // Create a subtle notification
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #667eea;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      animation: slideIn 0.3s ease;
+    `;
+    notification.textContent = 'Haz clic en el botón para reproducir la música';
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      notification.style.animation = 'slideOut 0.3s ease';
+      setTimeout(() => notification.remove(), 300);
+    }, 3000);
+  }
+
+  showAudioError() {
+    const audioText = this.audioToggle.querySelector('.audio-text');
+    if (audioText) {
+      audioText.textContent = 'Error de audio';
+      this.audioToggle.style.background = '#e53e3e';
+    }
+  }
+}
+
+// Utility functions
+const utils = {
+  // Check if device is mobile
+  isMobile() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  },
+
+  // Check if device supports touch
+  isTouchDevice() {
+    return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  },
+
+  // Optimize for mobile
+  optimizeForMobile() {
+    if (this.isMobile()) {
+      // Add mobile-specific optimizations
+      document.body.classList.add('mobile-device');
+      
+      // Prevent zoom on double tap
+      let lastTouchEnd = 0;
+      document.addEventListener('touchend', (e) => {
+        const now = (new Date()).getTime();
+        if (now - lastTouchEnd <= 300) {
+          e.preventDefault();
+        }
+        lastTouchEnd = now;
+      }, false);
+    }
+  }
 };
 
-if (pdfjsLib.LinkTarget) {
-  linkService.externalLinkTarget = pdfjsLib.LinkTarget.BLANK;
-}
-
-function clearPages() {
-  const pages = container.querySelectorAll(".pdf-page");
-  pages.forEach((page) => page.remove());
-}
-
-function getScale(baseViewport) {
-  const bounds = container.getBoundingClientRect();
-  const availableWidth = bounds.width || window.innerWidth || baseViewport.width;
-  const maxWidth = Math.min(availableWidth, 860);
-  const scale = maxWidth / baseViewport.width;
-  return scale > 0 ? scale : 1;
-}
-
-async function renderPage(pageNumber) {
-  const page = await state.pdf.getPage(pageNumber);
-  const baseViewport = page.getViewport({ scale: 1 });
-  const scale = getScale(baseViewport);
-  const viewport = page.getViewport({ scale });
-
-  const pageHolder = document.createElement("div");
-  pageHolder.className = "pdf-page";
-  pageHolder.dataset.pageNumber = String(pageNumber);
-
-  const canvas = document.createElement("canvas");
-  canvas.className = "pdf-canvas";
-  const context = canvas.getContext("2d", { alpha: false });
-
-  const outputScale = window.devicePixelRatio || 1;
-  canvas.width = Math.floor(viewport.width * outputScale);
-  canvas.height = Math.floor(viewport.height * outputScale);
-  canvas.style.width = `${viewport.width}px`;
-  canvas.style.height = `${viewport.height}px`;
-  context.setTransform(outputScale, 0, 0, outputScale, 0, 0);
-
-  pageHolder.appendChild(canvas);
-
-  const annotationLayer = document.createElement("div");
-  annotationLayer.className = "annotationLayer";
-  pageHolder.appendChild(annotationLayer);
-
-  container.appendChild(pageHolder);
-
-  await page.render({
-    canvasContext: context,
-    viewport,
-    intent: "display",
-  }).promise;
-
-  const annotations = await page.getAnnotations({ intent: "display" });
-  annotationLayer.innerHTML = "";
-  pdfjsLib.AnnotationLayer.render({
-    annotations,
-    div: annotationLayer,
-    page,
-    viewport,
-    linkService,
-    renderInteractiveForms: true,
-  });
-}
-
-async function renderAllPages() {
-  if (!state.pdf) {
-    return;
+// Add CSS animations
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
   }
-
-  if (state.isRendering) {
-    state.needsRerender = true;
-    return;
+  
+  @keyframes slideOut {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
   }
-
-  state.isRendering = true;
-  state.needsRerender = false;
-  clearPages();
-
-  for (let pageNumber = 1; pageNumber <= state.pdf.numPages; pageNumber += 1) {
-    // Await each page to keep order and avoid layout jumps
-    await renderPage(pageNumber);
+  
+  .mobile-device .pdf-viewer {
+    min-height: 400px !important;
   }
-
-  state.isRendering = false;
-
-  if (state.needsRerender) {
-    state.needsRerender = false;
-    renderAllPages();
-  }
-}
-
-function handleResize() {
-  if (!state.pdf) {
-    return;
-  }
-
-  window.clearTimeout(state.resizeTimer);
-  state.resizeTimer = window.setTimeout(() => {
-    state.needsRerender = true;
-    renderAllPages();
-  }, 220);
-}
-
-function setupAudio() {
-  if (!audio || !audioToggle) {
-    return;
-  }
-
-  const updateButton = () => {
-    const playing = !audio.paused;
-    audioToggle.textContent = playing ? "Pausar musica" : "Reproducir musica";
-    audioToggle.setAttribute("aria-pressed", playing ? "true" : "false");
-  };
-
-  const tryPlay = async () => {
-    try {
-      await audio.play();
-    } catch (error) {
-      console.warn("Audio bloqueado por el navegador", error);
-    } finally {
-      updateButton();
+  
+  @media (max-width: 768px) {
+    .mobile-device .pdf-viewer {
+      min-height: 350px !important;
     }
-  };
+  }
+`;
+document.head.appendChild(style);
 
-  audioToggle.addEventListener("click", async () => {
-    if (audio.paused) {
-      await tryPlay();
-    } else {
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+  // Initialize the main application
+  new WeddingInvitation();
+  
+  // Optimize for mobile devices
+  utils.optimizeForMobile();
+  
+  // Log successful initialization
+  console.log('🎵 Wedding Invitation loaded successfully!');
+});
+
+// Handle page visibility changes (pause audio when tab is hidden)
+document.addEventListener('visibilitychange', () => {
+  const audio = document.getElementById('background-audio');
+  if (audio) {
+    if (document.hidden) {
       audio.pause();
-      updateButton();
-    }
-  });
-
-  audio.addEventListener("play", updateButton);
-  audio.addEventListener("pause", updateButton);
-  audio.addEventListener("ended", updateButton);
-
-  const autoStart = async () => {
-    document.removeEventListener("pointerdown", autoStart);
-    document.removeEventListener("keydown", autoStart);
-
-    if (audio.paused) {
-      await tryPlay();
-    }
-  };
-
-  document.addEventListener("pointerdown", autoStart, { once: true });
-  document.addEventListener("keydown", autoStart, { once: true });
-
-  updateButton();
-}
-
-async function loadDocument() {
-  setupAudio();
-
-  try {
-    const loadingTask = pdfjsLib.getDocument({ url: pdfPath });
-    const pdf = await loadingTask.promise;
-    state.pdf = pdf;
-    linkService.setDocument(pdf, null);
-
-    if (loader) {
-      loader.remove();
-    }
-
-    await renderAllPages();
-    window.addEventListener("resize", handleResize);
-  } catch (error) {
-    console.error("No se pudo renderizar el PDF", error);
-
-    if (loader) {
-      loader.innerHTML = `
-        <div class="error-message">
-          <p>No se pudo cargar el PDF.</p>
-          <p><a href="${pdfPath}" target="_blank" rel="noopener">Abrir en otra ventana</a></p>
-        </div>
-      `;
     }
   }
-}
-
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", loadDocument);
-} else {
-  loadDocument();
-}
-
-
-
+});

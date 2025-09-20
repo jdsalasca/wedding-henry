@@ -1,48 +1,44 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invitación de Boda - Henry & Liliana</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Invitacion Henry y Liliana</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf_viewer.min.css">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 <body>
-    <div class="app">
-        <header class="header">
-            <h1>Henry & Liliana</h1>
-        </header>
+  <main class="page">
+    <header class="hero">
+      <h1>Henry & Liliana</h1>
+      <p class="hero-note">Con mucha alegria compartimos nuestra invitacion.</p>
+      <button id="audio-toggle" type="button" class="audio-button" aria-pressed="false">
+        Reproducir musica
+      </button>
+    </header>
 
-        <main class="viewer">
-            <div class="pdf-container">
-                <canvas id="pdf-canvas"></canvas>
-                <div id="annotation-layer" class="annotation-layer"></div>
-                <div class="loading" id="loading">
-                    <div class="spinner"></div>
-                    <p>Cargando invitación...</p>
-                </div>
-            </div>
-            
-            <div class="controls">
-                <button id="prev" class="btn" disabled>‹</button>
-                <span id="page-info">1 / 1</span>
-                <button id="next" class="btn" disabled>›</button>
-            </div>
+    <section class="pdf-shell">
+      <div id="pdf-container" class="pdf-container" role="region" aria-label="Invitacion en PDF">
+        <div class="loader" id="loader">
+          <div class="spinner" aria-hidden="true"></div>
+          <p>Cargando invitacion...</p>
+        </div>
+      </div>
+      <p class="helper-text">Desliza hacia abajo para leer todo el documento. Los enlaces dentro del PDF permanecen activos.</p>
+      <a class="download-link" href="wedding-invitation.pdf" download>
+        Descargar PDF
+      </a>
+    </section>
+  </main>
 
-            <div class="audio-control">
-                <button id="audio-toggle" class="audio-btn">
-                    <span class="icon">🎵</span>
-                </button>
-                <audio id="audio" loop>
-                    <source src="wedding-song.mp3" type="audio/mpeg">
-                </audio>
-            </div>
-        </main>
-    </div>
+  <audio id="audio" loop preload="auto">
+    <source src="wedding-song.mp3" type="audio/mpeg">
+  </audio>
 
-    <script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>

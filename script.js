@@ -54,30 +54,81 @@ class WeddingInvitationApp {
     setupTouchEvents() {
         let startX = 0;
         let startY = 0;
+        let startTime = 0;
         const threshold = 50;
+        const maxTime = 500; // Máximo tiempo para considerar un swipe
 
-        this.canvas.addEventListener('touchstart', (e) => {
-            e.preventDefault();
+        // Usar el contenedor PDF en lugar del canvas para mejor detección
+        const touchArea = this.canvas.parentElement;
+
+        touchArea.addEventListener('touchstart', (e) => {
             const touch = e.touches[0];
             startX = touch.clientX;
             startY = touch.clientY;
+            startTime = Date.now();
+        }, { passive: true });
+
+        touchArea.addEventListener('touchmove', (e) => {
+            // Prevenir scroll solo durante el movimiento activo
+            if (e.touches.length === 1) {
+                e.preventDefault();
+            }
         }, { passive: false });
 
-        this.canvas.addEventListener('touchend', (e) => {
-            e.preventDefault();
+        touchArea.addEventListener('touchend', (e) => {
             const touch = e.changedTouches[0];
             const deltaX = touch.clientX - startX;
             const deltaY = Math.abs(touch.clientY - startY);
+            const deltaTime = Date.now() - startTime;
             
-            // Solo procesar swipes horizontales
-            if (deltaY < threshold) {
-                if (deltaX > threshold) {
+            // Validar que sea un swipe válido
+            if (deltaTime < maxTime && deltaY < threshold && Math.abs(deltaX) > threshold) {
+                if (deltaX > 0) {
                     this.onPrevPage();
-                } else if (deltaX < -threshold) {
+                } else {
                     this.onNextPage();
                 }
             }
-        }, { passive: false });
+        }, { passive: true });
+
+        // Agregar indicadores visuales para swipe
+        this.addSwipeIndicators();
+    }
+
+    addSwipeIndicators() {
+        // Crear indicadores visuales para swipe en móviles
+        const container = this.canvas.parentElement;
+        
+        // Indicador izquierdo
+        const leftIndicator = document.createElement('div');
+        leftIndicator.className = 'swipe-indicator swipe-left';
+        leftIndicator.innerHTML = '‹';
+        container.appendChild(leftIndicator);
+        
+        // Indicador derecho
+        const rightIndicator = document.createElement('div');
+        rightIndicator.className = 'swipe-indicator swipe-right';
+        rightIndicator.innerHTML = '›';
+        container.appendChild(rightIndicator);
+        
+        // Mostrar indicadores solo en móviles
+        if (this.isMobile()) {
+            setTimeout(() => {
+                leftIndicator.style.opacity = '0.7';
+                rightIndicator.style.opacity = '0.7';
+                
+                // Ocultar después de 3 segundos
+                setTimeout(() => {
+                    leftIndicator.style.opacity = '0';
+                    rightIndicator.style.opacity = '0';
+                }, 3000);
+            }, 1000);
+        }
+    }
+
+    isMobile() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+               window.innerWidth <= 768;
     }
 
     handleKeyboard(e) {
@@ -111,6 +162,7 @@ class WeddingInvitationApp {
             
             this.pdfDoc = await loadingTask.promise;
             this.updatePageInfo();
+            this.checkSinglePage();
             this.renderPage(this.pageNum);
             
         } catch (error) {
@@ -119,7 +171,17 @@ class WeddingInvitationApp {
         }
     }
 
-    renderPage(num) {
+    checkSinglePage() {
+        // Ocultar controles de navegación si solo hay una página
+        const controls = document.querySelector('.controls');
+        if (this.pdfDoc.numPages === 1) {
+            controls.classList.add('single-page');
+        } else {
+            controls.classList.remove('single-page');
+        }
+    }
+
+    async renderPage(num) {
         if (this.pageRendering) {
             this.pageNumPending = num;
             return;
@@ -127,44 +189,103 @@ class WeddingInvitationApp {
         
         this.pageRendering = true;
         this.showLoading(true);
-
-        this.pdfDoc.getPage(num).then((page) => {
-            // Calcular escala óptima para el dispositivo
+        
+        try {
+            const page = await this.pdfDoc.getPage(num);
             const viewport = this.calculateOptimalViewport(page);
-            
-            // Configurar canvas con alta resolución
             const outputScale = this.getOutputScale();
-            this.canvas.width = Math.floor(viewport.width * outputScale);
-            this.canvas.height = Math.floor(viewport.height * outputScale);
+            
+            this.canvas.width = Math.floor(viewport.width * outputScale.sx);
+            this.canvas.height = Math.floor(viewport.height * outputScale.sy);
             this.canvas.style.width = Math.floor(viewport.width) + 'px';
             this.canvas.style.height = Math.floor(viewport.height) + 'px';
 
-            const transform = outputScale !== 1 ? [outputScale, 0, 0, outputScale, 0, 0] : null;
+            const transform = outputScale.scaled ? [outputScale.sx, 0, 0, outputScale.sy, 0, 0] : null;
 
             const renderContext = {
                 canvasContext: this.ctx,
-                transform: transform,
                 viewport: viewport,
-                intent: 'display'
+                transform: transform,
+                renderInteractiveForms: true
             };
 
             const renderTask = page.render(renderContext);
+            await renderTask.promise;
+            
+            // Renderizar anotaciones (enlaces clickeables)
+            await this.renderAnnotations(page, viewport);
+            
+            this.pageRendering = false;
+            this.showLoading(false);
+            
+            if (this.pageNumPending !== null) {
+                this.renderPage(this.pageNumPending);
+                this.pageNumPending = null;
+            }
+            
+        } catch (error) {
+            console.error('Error renderizando página:', error);
+            this.showError('Error al renderizar la página');
+            this.pageRendering = false;
+        }
+    }
 
-            renderTask.promise.then(() => {
-                this.pageRendering = false;
-                this.showLoading(false);
-                
-                if (this.pageNumPending !== null) {
-                    this.renderPage(this.pageNumPending);
-                    this.pageNumPending = null;
-                }
-            }).catch((error) => {
-                console.error('Error renderizando página:', error);
-                this.pageRendering = false;
-                this.showLoading(false);
-                this.showError('Error al mostrar la página');
-            });
-        });
+    async renderAnnotations(page, viewport) {
+        try {
+            const annotationLayer = document.getElementById('annotation-layer');
+            
+            // Limpiar anotaciones anteriores
+            annotationLayer.innerHTML = '';
+            
+            // Configurar el tamaño de la capa de anotaciones
+            annotationLayer.style.width = this.canvas.style.width;
+            annotationLayer.style.height = this.canvas.style.height;
+            
+            // Obtener anotaciones de la página
+            const annotations = await page.getAnnotations();
+            
+            if (annotations.length > 0) {
+                // Renderizar anotaciones manualmente para mayor compatibilidad
+                annotations.forEach((annotation, index) => {
+                    if (annotation.subtype === 'Link' && annotation.url) {
+                        const linkElement = document.createElement('a');
+                        linkElement.href = annotation.url;
+                        linkElement.target = '_blank';
+                        linkElement.rel = 'noopener noreferrer';
+                        linkElement.style.position = 'absolute';
+                        linkElement.style.left = `${annotation.rect[0] * viewport.scale}px`;
+                        linkElement.style.top = `${(viewport.height - annotation.rect[3]) * viewport.scale}px`;
+                        linkElement.style.width = `${(annotation.rect[2] - annotation.rect[0]) * viewport.scale}px`;
+                        linkElement.style.height = `${(annotation.rect[3] - annotation.rect[1]) * viewport.scale}px`;
+                        linkElement.style.background = 'transparent';
+                        linkElement.style.border = 'none';
+                        linkElement.style.cursor = 'pointer';
+                        linkElement.style.zIndex = '10';
+                        linkElement.style.pointerEvents = 'auto';
+                        linkElement.innerHTML = '&nbsp;'; // Contenido invisible pero clickeable
+                        
+                        // Efecto hover
+                        linkElement.addEventListener('mouseenter', () => {
+                            linkElement.style.background = 'rgba(255, 255, 0, 0.2)';
+                            linkElement.style.border = '1px solid rgba(255, 255, 0, 0.8)';
+                        });
+                        
+                        linkElement.addEventListener('mouseleave', () => {
+                            linkElement.style.background = 'transparent';
+                            linkElement.style.border = 'none';
+                        });
+                        
+                        // Debug: agregar título para identificar el enlace
+                        linkElement.title = `Enlace: ${annotation.url}`;
+                        
+                        annotationLayer.appendChild(linkElement);
+                    }
+                });
+            }
+            
+        } catch (error) {
+            console.error('Error renderizando anotaciones:', error);
+        }
     }
 
     calculateOptimalViewport(page) {

@@ -20,13 +20,29 @@
     <!-- PDF Viewer -->
     <main class="pdf-section">
       <div class="pdf-container">
-        <!-- Google Docs Viewer - Main Solution -->
+        <!-- Method 1: Direct PDF embed (works on most browsers) -->
+        <embed 
+          id="pdf-embed"
+          src="wedding-invitation.pdf" 
+          type="application/pdf" 
+          class="pdf-viewer embed-viewer"
+          title="Invitación de boda Henry y Liliana">
+        
+        <!-- Method 2: Object tag (alternative for some browsers) -->
+        <object 
+          id="pdf-object"
+          data="wedding-invitation.pdf" 
+          type="application/pdf" 
+          class="pdf-viewer object-viewer"
+          title="Invitación de boda Henry y Liliana">
+        </object>
+        
+        <!-- Method 3: Iframe (works when others don't) -->
         <iframe 
-          id="pdf-viewer"
-          src=""
-          class="pdf-viewer"
-          title="Invitación de boda Henry y Liliana"
-          allowfullscreen>
+          id="pdf-iframe"
+          src="wedding-invitation.pdf" 
+          class="pdf-viewer iframe-viewer"
+          title="Invitación de boda Henry y Liliana">
         </iframe>
         
         <!-- Loading State -->

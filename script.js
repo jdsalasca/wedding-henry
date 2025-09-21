@@ -15,109 +15,101 @@ class WeddingInvitation {
   }
 
   setupPDFViewer() {
-    const pdfViewer = document.getElementById('pdf-viewer');
+    const pdfEmbed = document.getElementById('pdf-embed');
+    const pdfObject = document.getElementById('pdf-object');
+    const pdfIframe = document.getElementById('pdf-iframe');
     const pdfLoader = document.getElementById('pdf-loader');
     const fallback = document.querySelector('.pdf-fallback');
     
-    if (!pdfViewer || !pdfLoader || !fallback) {
+    if (!pdfEmbed || !pdfObject || !pdfIframe || !pdfLoader || !fallback) {
       console.warn('PDF viewer elements not found');
       return;
     }
 
-    // Get the current domain for the PDF URL
-    const currentDomain = window.location.origin;
-    const pdfUrl = `${currentDomain}/wedding-invitation.pdf`;
-    
-    // Google Docs Viewer URL with mobile-optimized parameters
-    const googleViewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(pdfUrl)}&embedded=true&chrome=false&navpanes=false&toolbar=false&statusbar=false&messages=false&scrollbar=false`;
-    
-    // Set the iframe source
-    pdfViewer.src = googleViewerUrl;
-    
-    // Handle iframe load events
-    pdfViewer.addEventListener('load', () => {
-      console.log('PDF viewer loaded');
-      
-      // Check if Google Docs shows error message
-      setTimeout(() => {
-        this.checkGoogleDocsStatus();
-      }, 2000);
+    // Try each method in order of preference
+    this.tryPDFMethod(pdfEmbed, 'embed', pdfLoader, fallback, () => {
+      this.tryPDFMethod(pdfObject, 'object', pdfLoader, fallback, () => {
+        this.tryPDFMethod(pdfIframe, 'iframe', pdfLoader, fallback, () => {
+          // All methods failed, show fallback
+          console.warn('All PDF methods failed, showing fallback');
+          this.showFallback();
+        });
+      });
     });
-    
-    pdfViewer.addEventListener('error', () => {
-      console.warn('PDF viewer failed to load');
-      this.showFallback();
-    });
-    
-    // Fallback timeout - if Google Docs doesn't load within 8 seconds
-    setTimeout(() => {
-      if (pdfLoader.style.display !== 'none') {
-        console.warn('PDF viewer timeout, showing fallback');
-        this.showFallback();
-      }
-    }, 8000);
   }
 
-  checkGoogleDocsStatus() {
-    const pdfViewer = document.getElementById('pdf-viewer');
-    const pdfLoader = document.getElementById('pdf-loader');
+  tryPDFMethod(element, methodName, loader, fallback, onFail) {
+    console.log(`Trying PDF method: ${methodName}`);
     
-    try {
-      // Try to access iframe content to check for error messages
-      const iframeDoc = pdfViewer.contentDocument || pdfViewer.contentWindow.document;
-      
-      if (iframeDoc) {
-        const bodyText = iframeDoc.body ? iframeDoc.body.innerText.toLowerCase() : '';
-        
-        // Check for Google Docs error messages
-        if (bodyText.includes('couldn\'t preview file') || 
-            bodyText.includes('file is too large') ||
-            bodyText.includes('preview not available') ||
-            bodyText.includes('unable to preview')) {
-          console.warn('Google Docs Viewer shows error, using fallback');
-          this.showFallback();
-          return;
-        }
-        
-        // If we get here, Google Docs is working
-        pdfLoader.style.display = 'none';
-        pdfViewer.style.display = 'block';
-        this.setupPDFLinkHandling();
-      } else {
-        // Iframe not accessible, but that's normal for Google Docs
-        pdfLoader.style.display = 'none';
-        pdfViewer.style.display = 'block';
-        this.setupPDFLinkHandling();
-      }
-    } catch (error) {
-      // CORS error is expected with Google Docs Viewer
-      // Assume it's working if we can't access it
-      pdfLoader.style.display = 'none';
-      pdfViewer.style.display = 'block';
+    // Show the element
+    element.style.display = 'block';
+    
+    // Set up event listeners
+    const onLoad = () => {
+      console.log(`PDF method ${methodName} loaded successfully`);
+      loader.style.display = 'none';
+      element.style.display = 'block';
       this.setupPDFLinkHandling();
+    };
+    
+    const onError = () => {
+      console.warn(`PDF method ${methodName} failed`);
+      element.style.display = 'none';
+      onFail();
+    };
+    
+    // Add event listeners
+    element.addEventListener('load', onLoad, { once: true });
+    element.addEventListener('error', onError, { once: true });
+    
+    // Timeout after 5 seconds
+    setTimeout(() => {
+      if (loader.style.display !== 'none') {
+        console.warn(`PDF method ${methodName} timeout`);
+        element.style.display = 'none';
+        onFail();
+      }
+    }, 5000);
+    
+    // For embed and object, also check if they have content
+    if (methodName === 'embed' || methodName === 'object') {
+      setTimeout(() => {
+        try {
+          // Check if element has rendered content
+          if (element.offsetHeight < 50 || element.offsetWidth < 50) {
+            console.warn(`PDF method ${methodName} has no content`);
+            element.style.display = 'none';
+            onFail();
+          } else {
+            // It seems to be working
+            onLoad();
+          }
+        } catch (error) {
+          console.warn(`Error checking ${methodName} content:`, error);
+          element.style.display = 'none';
+          onFail();
+        }
+      }, 2000);
     }
   }
 
   showFallback() {
-    const pdfViewer = document.getElementById('pdf-viewer');
+    const pdfEmbed = document.getElementById('pdf-embed');
+    const pdfObject = document.getElementById('pdf-object');
+    const pdfIframe = document.getElementById('pdf-iframe');
     const pdfLoader = document.getElementById('pdf-loader');
     const fallback = document.querySelector('.pdf-fallback');
     
-    if (pdfViewer) pdfViewer.style.display = 'none';
+    // Hide all PDF viewers
+    if (pdfEmbed) pdfEmbed.style.display = 'none';
+    if (pdfObject) pdfObject.style.display = 'none';
+    if (pdfIframe) pdfIframe.style.display = 'none';
     if (pdfLoader) pdfLoader.style.display = 'none';
     if (fallback) fallback.style.display = 'flex';
   }
 
   setupPDFLinkHandling() {
-    // Handle messages from the iframe (Google Docs Viewer)
-    window.addEventListener('message', (event) => {
-      // Google Docs Viewer sends messages about link clicks
-      if (event.data && event.data.type === 'link-click') {
-        this.openLinkInPopup(event.data.url);
-      }
-    });
-
-    // Also handle clicks on the document that might be from PDF links
+    // Handle clicks on the document that might be from PDF links
     document.addEventListener('click', (e) => {
       // Check if the click target is a link
       if (e.target.tagName === 'A' && e.target.href) {

@@ -20,19 +20,31 @@
     <!-- PDF Viewer -->
     <main class="pdf-section">
       <div class="pdf-container">
+        <!-- Desktop PDF Viewer -->
         <embed 
+          id="desktop-pdf"
           src="wedding-invitation.pdf" 
           type="application/pdf" 
           width="100%" 
           height="100%"
-          class="pdf-viewer"
+          class="pdf-viewer desktop-viewer"
           title="Invitación de boda Henry y Liliana">
+        
+        <!-- Mobile PDF Viewer -->
+        <iframe 
+          id="mobile-pdf"
+          src="wedding-invitation.pdf#toolbar=0&navpanes=0&scrollbar=0&statusbar=0&messages=0&scrollbar=0"
+          width="100%" 
+          height="100%"
+          class="pdf-viewer mobile-viewer"
+          title="Invitación de boda Henry y Liliana">
+        </iframe>
         
         <!-- Fallback -->
         <div class="pdf-fallback">
-          <p>Tu navegador no puede mostrar el PDF.</p>
-          <a href="wedding-invitation.pdf" download class="download-btn">
-            Descargar invitación
+          <p>Tu navegador no puede mostrar el PDF directamente.</p>
+          <a href="wedding-invitation.pdf" target="_blank" class="download-btn">
+            📄 Abrir invitación
           </a>
         </div>
       </div>

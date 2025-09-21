@@ -114,55 +114,129 @@ class WeddingInvitation {
   }
 
   setupFallback() {
-    // Check if PDF embed is supported
-    const pdfViewer = document.querySelector('.pdf-viewer');
+    // Check if PDF embed/iframe is supported
+    const desktopPdf = document.getElementById('desktop-pdf');
+    const mobilePdf = document.getElementById('mobile-pdf');
     const fallback = document.querySelector('.pdf-fallback');
     
-    if (!pdfViewer || !fallback) return;
+    if (!desktopPdf || !mobilePdf || !fallback) return;
 
-    // Test if embed worked
-    setTimeout(() => {
-      try {
-        // If the embed has no content, show fallback
-        if (pdfViewer.offsetHeight < 100) {
-          pdfViewer.style.display = 'none';
-          fallback.style.display = 'flex';
-        } else {
-          // PDF loaded successfully, ensure interactive elements work
-          this.enhancePDFInteractivity();
-        }
+    // Detect if we're on mobile
+    const isMobile = this.isMobileDevice();
+    
+    if (isMobile) {
+      // On mobile, use iframe
+      desktopPdf.style.display = 'none';
+      mobilePdf.style.display = 'block';
+      
+      // Test if iframe worked
+      setTimeout(() => {
+        try {
+          if (mobilePdf.offsetHeight < 100) {
+            mobilePdf.style.display = 'none';
+            fallback.style.display = 'flex';
+          } else {
+            this.enhancePDFInteractivity();
+          }
     } catch (error) {
-        console.warn('PDF embed check failed:', error);
-        pdfViewer.style.display = 'none';
-        fallback.style.display = 'flex';
-      }
-    }, 2000);
+          console.warn('Mobile PDF iframe check failed:', error);
+          mobilePdf.style.display = 'none';
+          fallback.style.display = 'flex';
+        }
+      }, 2000);
+    } else {
+      // On desktop, use embed
+      desktopPdf.style.display = 'block';
+      mobilePdf.style.display = 'none';
+      
+      // Test if embed worked
+      setTimeout(() => {
+        try {
+          if (desktopPdf.offsetHeight < 100) {
+            desktopPdf.style.display = 'none';
+            fallback.style.display = 'flex';
+          } else {
+            this.enhancePDFInteractivity();
+          }
+        } catch (error) {
+          console.warn('Desktop PDF embed check failed:', error);
+          desktopPdf.style.display = 'none';
+          fallback.style.display = 'flex';
+        }
+      }, 2000);
+    }
+  }
+
+  isMobileDevice() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+           window.innerWidth <= 768 ||
+           ('ontouchstart' in window && window.innerWidth <= 1024);
   }
 
   enhancePDFInteractivity() {
     // Ensure PDF interactive elements work properly
-    const pdfViewer = document.querySelector('.pdf-viewer');
-    if (!pdfViewer) return;
+    const desktopPdf = document.getElementById('desktop-pdf');
+    const mobilePdf = document.getElementById('mobile-pdf');
+    const activePdf = desktopPdf.style.display !== 'none' ? desktopPdf : mobilePdf;
+    
+    if (!activePdf) return;
 
     // Add event listeners to handle PDF interactions
-    pdfViewer.addEventListener('load', () => {
+    activePdf.addEventListener('load', () => {
       console.log('PDF loaded with interactive elements');
     });
 
-    // Handle PDF link clicks that might not work in embed
-    pdfViewer.addEventListener('click', (e) => {
+    // Handle PDF link clicks that might not work in embed/iframe
+    activePdf.addEventListener('click', (e) => {
       // Let the PDF handle its own interactions
       // This is just a fallback for edge cases
     });
 
     // Ensure the PDF gets focus for keyboard navigation
-    pdfViewer.setAttribute('tabindex', '0');
+    activePdf.setAttribute('tabindex', '0');
     
     // Add some styling to ensure interactive elements are visible
-    pdfViewer.style.cssText += `
+    activePdf.style.cssText += `
       pointer-events: auto !important;
       user-select: none;
     `;
+
+    // Handle external links in PDF to open in popup windows
+    this.setupPDFLinkHandling();
+  }
+
+  setupPDFLinkHandling() {
+    // This function will be called when the PDF loads
+    // We'll use postMessage to communicate with the PDF content
+    window.addEventListener('message', (event) => {
+      // Handle messages from PDF iframe
+      if (event.data && event.data.type === 'pdf-link-click') {
+        this.openLinkInPopup(event.data.url);
+      }
+    });
+
+    // Also handle clicks on the document that might be from PDF links
+    document.addEventListener('click', (e) => {
+      // Check if the click target is a link
+      if (e.target.tagName === 'A' && e.target.href) {
+        e.preventDefault();
+        this.openLinkInPopup(e.target.href);
+      }
+    });
+  }
+
+  openLinkInPopup(url) {
+    // Open link in popup window
+    const popup = window.open(
+      url, 
+      '_blank', 
+      'width=800,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no'
+    );
+    
+    if (!popup) {
+      // Fallback if popup is blocked
+      window.open(url, '_blank');
+    }
   }
 
   setupAccessibility() {

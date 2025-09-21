@@ -87,6 +87,16 @@ body {
   -ms-user-select: none;
 }
 
+/* Desktop PDF Viewer */
+.desktop-viewer {
+  display: block;
+}
+
+/* Mobile PDF Viewer */
+.mobile-viewer {
+  display: none;
+}
+
 /* Ensure PDF interactive elements are clickable */
 .pdf-viewer:focus {
   outline: 1px solid #ccc;
@@ -195,8 +205,8 @@ body {
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .container {
-    padding: 30px 15px;
-    gap: 30px;
+    padding: 20px 15px;
+    gap: 25px;
   }
   
   .header h1 {
@@ -217,6 +227,15 @@ body {
     min-height: 500px;
   }
   
+  /* Switch to mobile PDF viewer on mobile */
+  .desktop-viewer {
+    display: none;
+  }
+  
+  .mobile-viewer {
+    display: block;
+  }
+  
   .audio-btn {
     padding: 10px 16px;
     font-size: 0.85rem;
@@ -225,8 +244,8 @@ body {
 
 @media (max-width: 480px) {
   .container {
-    padding: 20px 12px;
-    gap: 25px;
+    padding: 15px 12px;
+    gap: 20px;
   }
   
   .header h1 {
@@ -241,6 +260,15 @@ body {
   .pdf-viewer {
     border-radius: 4px;
     min-height: 400px;
+  }
+  
+  /* Ensure mobile viewer is active on small screens */
+  .desktop-viewer {
+    display: none;
+  }
+  
+  .mobile-viewer {
+    display: block;
   }
   
   .audio-btn {

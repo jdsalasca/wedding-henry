@@ -400,39 +400,120 @@ function tryGoogleDriveViewer() {
 
         let hasLoaded = false;
         let hasErrored = false;
+        let timeoutId;
 
-        // Success handler
+        // Mobile-specific User-Agent detection
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        console.log('📱 Mobile device detected:', isMobile);
+
+        // Success handler with enhanced mobile detection
         const onLoad = () => {
             if (hasErrored) return;
-            hasLoaded = true;
-            console.log('✅ Google Drive Viewer loaded successfully');
-            showViewer('google-drive-viewer');
-            resolve(true);
+            console.log('📱 Google Drive iframe loaded, checking content...');
+            
+            // Extended wait time for mobile devices
+            const checkDelay = isMobile ? 3000 : 2000;
+            
+            setTimeout(() => {
+                try {
+                    // Multiple methods to detect errors on mobile
+                    let errorDetected = false;
+                    let errorMessage = '';
+
+                    // Method 1: Try to access iframe content (may fail due to CORS)
+                    try {
+                        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                        if (iframeDoc) {
+                            const bodyText = iframeDoc.body.textContent || iframeDoc.body.innerText || '';
+                            if (bodyText.includes("Couldn't preview file") || 
+                                bodyText.includes("offline") || 
+                                bodyText.includes("limited connectivity") ||
+                                bodyText.includes("Try downloading") ||
+                                bodyText.includes("You may be offline")) {
+                                errorDetected = true;
+                                errorMessage = bodyText.substring(0, 100);
+                            }
+                        }
+                    } catch (corsError) {
+                        console.log('📱 CORS prevented content access (expected on mobile)');
+                    }
+
+                    // Method 2: Check iframe dimensions (mobile-specific)
+                    if (!errorDetected && isMobile) {
+                        const rect = iframe.getBoundingClientRect();
+                        if (rect.height < 100) {
+                            console.log('📱 Iframe height too small on mobile:', rect.height);
+                            errorDetected = true;
+                            errorMessage = 'Iframe collapsed on mobile';
+                        }
+                    }
+
+                    // Method 3: Check if iframe src is accessible
+                    if (!errorDetected) {
+                        // For mobile, we'll be more lenient and assume success if no obvious errors
+                        if (isMobile) {
+                            console.log('✅ Google Drive Viewer appears to be working on mobile');
+                            hasLoaded = true;
+                            clearTimeout(timeoutId);
+                            showViewer('google-drive-viewer');
+                            resolve(true);
+                            return;
+                        }
+                    }
+
+                    if (errorDetected) {
+                        console.log('❌ Google Drive shows error on mobile:', errorMessage);
+                        hasErrored = true;
+                        iframe.style.display = 'none';
+                        clearTimeout(timeoutId);
+                        resolve(false);
+                    } else {
+                        console.log('✅ Google Drive Viewer loaded successfully');
+                        hasLoaded = true;
+                        clearTimeout(timeoutId);
+                        showViewer('google-drive-viewer');
+                        resolve(true);
+                    }
+                } catch (error) {
+                    console.log('❌ Error checking Google Drive content:', error);
+                    hasErrored = true;
+                    iframe.style.display = 'none';
+                    clearTimeout(timeoutId);
+                    resolve(false);
+                }
+            }, checkDelay);
         };
 
         // Error handler
         const onError = () => {
             if (hasLoaded) return;
+            console.log('❌ Google Drive iframe failed to load');
             hasErrored = true;
-            console.log('❌ Google Drive Viewer failed to load');
+            iframe.style.display = 'none';
+            clearTimeout(timeoutId);
             resolve(false);
         };
+
+        // Timeout handler - more generous for mobile
+        const timeoutDelay = isMobile ? 15000 : 10000;
+        timeoutId = setTimeout(() => {
+            if (!hasLoaded && !hasErrored) {
+                console.log('⏰ Google Drive Viewer timeout on mobile');
+                hasErrored = true;
+                iframe.style.display = 'none';
+                resolve(false);
+            }
+        }, timeoutDelay);
 
         // Set up event listeners
         iframe.addEventListener('load', onLoad);
         iframe.addEventListener('error', onError);
 
-        // Show the iframe
-        iframe.style.display = 'block';
-
-        // Timeout fallback
-        setTimeout(() => {
-            if (!hasLoaded && !hasErrored) {
-                console.log('⏰ Google Drive Viewer timeout');
-                iframe.style.display = 'none';
-                resolve(false);
-            }
-        }, 8000);
+        // Force reload the iframe with mobile-optimized parameters
+        const originalSrc = iframe.src;
+        iframe.src = originalSrc + (originalSrc.includes('?') ? '&' : '?') + 'mobile=1&t=' + Date.now();
+        
+        console.log('📱 Loading Google Drive with mobile parameters:', iframe.src);
     });
 }
 

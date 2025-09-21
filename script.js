@@ -517,30 +517,280 @@ function tryGoogleDriveViewer() {
     });
 }
 
-// Initialize PDF viewer when page loads
-async function initializePDFViewer() {
-    console.log('🚀 Initializing PDF viewer...');
-    
-    // Sort methods by priority
-    const sortedMethods = pdfMethods.sort((a, b) => a.priority - b.priority);
-    
-    for (const method of sortedMethods) {
-        console.log(`🔄 Trying ${method.name}...`);
+// PDF Viewer Management
+class PDFViewerManager {
+    constructor() {
+        this.currentMethodIndex = 0;
+        this.reloadAttempts = 0;
+        this.maxReloadAttempts = 3;
+        this.methods = [
+            { name: 'Google GView', id: 'google-gview-viewer', handler: () => this.tryGoogleGView() },
+            { name: 'Google Drive', id: 'google-drive-viewer', handler: () => this.tryGoogleDrive() },
+            { name: 'Iframe', id: 'iframe-viewer', handler: () => this.tryIframeViewer() }
+        ];
+    }
+
+    async init() {
+        console.log('🔧 Initializing PDFViewerManager...');
         
-        try {
-            const success = await method.test();
-            if (success) {
-                console.log(`✅ ${method.name} successful!`);
-                hideLoader();
-                return;
-            }
-        } catch (error) {
-            console.log(`❌ ${method.name} failed:`, error);
+        // Hide loader and show appropriate viewer
+        hideLoader();
+        
+        // Check if mobile and prioritize Google GView
+        if (this.isMobile()) {
+            console.log('📱 Mobile detected - prioritizing Google GView');
+            await this.tryGoogleGView();
+        } else {
+            console.log('💻 Desktop detected - trying all methods');
+            await this.tryNextMethod();
         }
     }
+
+    isMobile() {
+        const userAgent = navigator.userAgent.toLowerCase();
+        const mobileKeywords = ['mobile', 'android', 'iphone', 'ipad', 'ipod', 'blackberry', 'windows phone'];
+        return mobileKeywords.some(keyword => userAgent.includes(keyword)) || 
+               window.innerWidth <= 768;
+    }
+
+    async tryGoogleGView() {
+        console.log('🔍 Trying Google GView...');
+        
+        try {
+            const iframe = document.getElementById('google-gview-viewer');
+            if (!iframe) {
+                console.error('❌ Google GView iframe not found');
+                await this.tryNextMethod();
+                return;
+            }
+
+            // Show the GView viewer
+            showViewer('google-gview-viewer');
+            
+            // Set up reload mechanism for slow loading
+            this.setupGViewReloadMechanism(iframe);
+            
+            console.log('✅ Google GView viewer loaded successfully');
+            
+        } catch (error) {
+            console.error('❌ Error with Google GView:', error);
+            await this.tryNextMethod();
+        }
+    }
+
+    setupGViewReloadMechanism(iframe) {
+        let reloadCount = 0;
+        const maxReloads = 3;
+        
+        const checkAndReload = () => {
+            // Check if iframe content is loaded
+            try {
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                if (!iframeDoc || iframeDoc.body.innerHTML.trim() === '') {
+                    if (reloadCount < maxReloads) {
+                        console.log(`🔄 Reloading GView (attempt ${reloadCount + 1}/${maxReloads})`);
+                        iframe.src = iframe.src; // Reload iframe
+                        reloadCount++;
+                        setTimeout(checkAndReload, 3000); // Check again in 3 seconds
+                    } else {
+                        console.log('❌ Max reloads reached, trying next method');
+                        this.tryNextMethod();
+                    }
+                }
+            } catch (e) {
+                // Cross-origin error is expected, iframe is likely loaded
+                console.log('✅ GView iframe appears to be loaded (cross-origin)');
+            }
+        };
+
+        // Initial check after 2 seconds
+        setTimeout(checkAndReload, 2000);
+    }
+
+    scheduleGViewReload(iframe, delay = 3000) {
+        setTimeout(() => {
+            console.log('🔄 Scheduled reload of GView iframe');
+            iframe.src = iframe.src;
+        }, delay);
+    }
+
+    async tryGoogleDrive() {
+        console.log('PDFViewerManager: Trying Google Drive...');
+        const iframe = document.getElementById('google-drive-viewer');
+        
+        if (!iframe) {
+            console.log('❌ Google Drive iframe not found');
+            this.tryNextMethod();
+             return;
+        }
+
+        return new Promise((resolve) => {
+            let hasLoaded = false;
+            let hasErrored = false;
+            let timeoutId;
     
-    // If all methods fail, show fallback
-    console.log('⚠️ All PDF methods failed, showing fallback content');
-    showFallback();
-    hideLoader();
+            // Mobile-specific User-Agent detection
+            const isMobile = this.isMobile;
+            console.log('📱 Mobile device detected:', isMobile);
+    
+            // Success handler with enhanced mobile detection
+            const onLoad = () => {
+                if (hasErrored) return;
+                console.log('📱 Google Drive iframe loaded, checking content...');
+                
+                // Extended wait time for mobile devices
+                const checkDelay = isMobile ? 3000 : 2000;
+                
+                setTimeout(() => {
+                    try {
+                        // Multiple methods to detect errors on mobile
+                        let errorDetected = false;
+                        let errorMessage = '';
+    
+                        // Method 1: Try to access iframe content (may fail due to CORS)
+                        try {
+                            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                            if (iframeDoc) {
+                                const bodyText = iframeDoc.body.textContent || iframeDoc.body.innerText || '';
+                                if (bodyText.includes("Couldn't preview file") || 
+                                    bodyText.includes("offline") || 
+                                    bodyText.includes("limited connectivity") ||
+                                    bodyText.includes("Try downloading") ||
+                                    bodyText.includes("You may be offline")) {
+                                    errorDetected = true;
+                                    errorMessage = bodyText.substring(0, 100);
+                                }
+                            }
+                        } catch (corsError) {
+                            console.log('📱 CORS prevented content access (expected on mobile)');
+                        }
+    
+                        // Method 2: Check iframe dimensions (mobile-specific)
+                        if (!errorDetected && isMobile) {
+                            const rect = iframe.getBoundingClientRect();
+                            if (rect.height < 100) {
+                                console.log('📱 Iframe height too small on mobile:', rect.height);
+                                errorDetected = true;
+                                errorMessage = 'Iframe collapsed on mobile';
+                            }
+                        }
+    
+                        // Method 3: Check if iframe src is accessible
+                        if (!errorDetected) {
+                            // For mobile, we'll be more lenient and assume success if no obvious errors
+                            if (isMobile) {
+                                console.log('✅ Google Drive Viewer appears to be working on mobile');
+                                hasLoaded = true;
+                                clearTimeout(timeoutId);
+                                this.showViewer('google-drive-viewer');
+                                resolve(true);
+                                return;
+                            }
+                        }
+    
+                        if (errorDetected) {
+                            console.log('❌ Google Drive shows error on mobile:', errorMessage);
+                            hasErrored = true;
+                            iframe.style.display = 'none';
+                            clearTimeout(timeoutId);
+                            resolve(false);
+                        } else {
+                            console.log('✅ Google Drive Viewer loaded successfully');
+                            hasLoaded = true;
+                            clearTimeout(timeoutId);
+                            this.showViewer('google-drive-viewer');
+                            resolve(true);
+                        }
+                    } catch (error) {
+                        console.log('❌ Error checking Google Drive content:', error);
+                        hasErrored = true;
+                        iframe.style.display = 'none';
+                        clearTimeout(timeoutId);
+                        resolve(false);
+                    }
+                }, checkDelay);
+            };
+    
+            // Error handler
+            const onError = () => {
+                if (hasLoaded) return;
+                console.log('❌ Google Drive iframe failed to load');
+                hasErrored = true;
+                iframe.style.display = 'none';
+                clearTimeout(timeoutId);
+                resolve(false);
+            };
+    
+            // Timeout handler - more generous for mobile
+            const timeoutDelay = isMobile ? 15000 : 10000;
+            timeoutId = setTimeout(() => {
+                if (!hasLoaded && !hasErrored) {
+                    console.log('⏰ Google Drive Viewer timeout on mobile');
+                    hasErrored = true;
+                    iframe.style.display = 'none';
+                    resolve(false);
+                }
+            }, timeoutDelay);
+    
+            // Set up event listeners
+            iframe.addEventListener('load', onLoad);
+            iframe.addEventListener('error', onError);
+    
+            // Force reload the iframe with mobile-optimized parameters
+            const originalSrc = iframe.src;
+            iframe.src = originalSrc + (originalSrc.includes('?') ? '&' : '?') + 'mobile=1&t=' + Date.now();
+            
+            console.log('📱 Loading Google Drive with mobile parameters:', iframe.src);
+        });
+    }
+
+    showViewer(viewerId) {
+        showViewer(viewerId);
+        this.currentViewer = viewerId;
+    }
+
+    tryNextMethod() {
+        // Try PDF.js as fallback
+        console.log('PDFViewerManager: Trying fallback methods...');
+        showFallback();
+    }
+}
+
+// Initialize PDF viewer when page loads
+async function initializePDFViewer() {
+    console.log('🚀 Initializing PDF Viewer...');
+    
+    // Use the new PDFViewerManager
+    const pdfManager = new PDFViewerManager();
+    await pdfManager.init();
+}
+
+// Helper functions for the PDFViewerManager
+function showViewer(viewerId) {
+    // Hide all viewers first
+    const allViewers = document.querySelectorAll('.pdf-viewer');
+    allViewers.forEach(viewer => {
+        viewer.style.display = 'none';
+    });
+    
+    // Show the selected viewer
+    const selectedViewer = document.getElementById(viewerId);
+    if (selectedViewer) {
+        selectedViewer.style.display = 'block';
+        console.log(`✅ Showing viewer: ${viewerId}`);
+    }
+}
+
+function hideLoader() {
+    const loader = document.getElementById('pdf-loader');
+    if (loader) {
+        loader.style.display = 'none';
+    }
+}
+
+function showFallback() {
+    const fallback = document.querySelector('.pdf-fallback');
+    if (fallback) {
+        fallback.style.display = 'block';
+    }
 }

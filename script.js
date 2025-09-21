@@ -1,4 +1,4 @@
-﻿// Audio functionality
+// Audio functionality
 class WeddingInvitation {
   constructor() {
     this.audio = document.getElementById('background-audio');
@@ -17,80 +17,133 @@ class WeddingInvitation {
   setupPDFViewer() {
     const pdfEmbed = document.getElementById('pdf-embed');
     const pdfObject = document.getElementById('pdf-object');
+    const pdfGoogleViewer = document.getElementById('pdf-google-viewer');
     const pdfIframe = document.getElementById('pdf-iframe');
     const pdfLoader = document.getElementById('pdf-loader');
-    const fallback = document.querySelector('.pdf-fallback');
-    
-    if (!pdfEmbed || !pdfObject || !pdfIframe || !pdfLoader || !fallback) {
+    const pdfFallback = document.querySelector('.pdf-fallback');
+
+    if (!pdfEmbed || !pdfObject || !pdfGoogleViewer || !pdfIframe || !pdfLoader) {
       console.warn('PDF viewer elements not found');
       return;
     }
 
-    // Try each method in order of preference
-    this.tryPDFMethod(pdfEmbed, 'embed', pdfLoader, fallback, () => {
-      this.tryPDFMethod(pdfObject, 'object', pdfLoader, fallback, () => {
-        this.tryPDFMethod(pdfIframe, 'iframe', pdfLoader, fallback, () => {
-          // All methods failed, show fallback
-          console.warn('All PDF methods failed, showing fallback');
-          this.showFallback();
+    // Show loader initially
+    pdfLoader.style.display = 'flex';
+
+    // Try different PDF loading methods in order
+    this.tryPDFMethod('embed', pdfEmbed, () => {
+      this.tryPDFMethod('object', pdfObject, () => {
+        this.tryPDFMethod('google-viewer', pdfGoogleViewer, () => {
+          this.tryPDFMethod('iframe', pdfIframe, () => {
+            // All methods failed, show fallback
+            console.warn('All PDF loading methods failed, showing fallback');
+            this.hideAllPDFViewers();
+            pdfLoader.style.display = 'none';
+            if (pdfFallback) {
+              pdfFallback.style.display = 'block';
+            }
+          });
         });
       });
     });
   }
 
-  tryPDFMethod(element, methodName, loader, fallback, onFail) {
-    console.log(`Trying PDF method: ${methodName}`);
+  tryPDFMethod(method, element, fallback) {
+    console.log(`Trying PDF method: ${method}`);
     
-    // Show the element
-    element.style.display = 'block';
-    
-    // Set up event listeners
-    const onLoad = () => {
-      console.log(`PDF method ${methodName} loaded successfully`);
-      loader.style.display = 'none';
-      element.style.display = 'block';
-      this.setupPDFLinkHandling();
-    };
-    
-    const onError = () => {
-      console.warn(`PDF method ${methodName} failed`);
-      element.style.display = 'none';
-      onFail();
-    };
-    
-    // Add event listeners
-    element.addEventListener('load', onLoad, { once: true });
-    element.addEventListener('error', onError, { once: true });
-    
-    // Timeout after 5 seconds
-    setTimeout(() => {
-      if (loader.style.display !== 'none') {
-        console.warn(`PDF method ${methodName} timeout`);
-        element.style.display = 'none';
-        onFail();
+    let hasLoaded = false;
+    const timeout = setTimeout(() => {
+      if (!hasLoaded) {
+        console.log(`PDF method ${method} timed out`);
+        fallback();
       }
     }, 5000);
-    
-    // For embed and object, also check if they have content
-    if (methodName === 'embed' || methodName === 'object') {
-      setTimeout(() => {
-        try {
-          // Check if element has rendered content
-          if (element.offsetHeight < 50 || element.offsetWidth < 50) {
-            console.warn(`PDF method ${methodName} has no content`);
-            element.style.display = 'none';
-            onFail();
+
+    const onSuccess = () => {
+      if (hasLoaded) return;
+      hasLoaded = true;
+      clearTimeout(timeout);
+      
+      // For embed and object, check if content is actually rendered
+      if (method === 'embed' || method === 'object') {
+        setTimeout(() => {
+          const rect = element.getBoundingClientRect();
+          if (rect.height > 100 && rect.width > 100) {
+            console.log(`PDF method ${method} loaded successfully`);
+            this.showPDFViewer(element);
           } else {
-            // It seems to be working
-            onLoad();
+            console.log(`PDF method ${method} loaded but no content visible`);
+            fallback();
           }
-        } catch (error) {
-          console.warn(`Error checking ${methodName} content:`, error);
-          element.style.display = 'none';
-          onFail();
-        }
-      }, 2000);
+        }, 1000);
+      } else {
+        // For iframes (including Google Docs viewer), assume success
+        console.log(`PDF method ${method} loaded successfully`);
+        this.showPDFViewer(element);
+      }
+    };
+
+    const onError = () => {
+      if (hasLoaded) return;
+      hasLoaded = true;
+      clearTimeout(timeout);
+      console.log(`PDF method ${method} failed to load`);
+      fallback();
+    };
+
+    // Set up event listeners based on element type
+    if (method === 'embed' || method === 'object') {
+      element.addEventListener('load', onSuccess);
+      element.addEventListener('error', onError);
+    } else if (method === 'google-viewer' || method === 'iframe') {
+      element.addEventListener('load', onSuccess);
+      element.addEventListener('error', onError);
+      // For Google Docs viewer, also try to detect if it loads properly
+      if (method === 'google-viewer') {
+        // Give Google Docs viewer a bit more time to load
+        setTimeout(() => {
+          if (!hasLoaded) {
+            onSuccess(); // Assume it worked if no error occurred
+          }
+        }, 3000);
+      }
     }
+
+    // Show the element to trigger loading
+    element.style.display = 'block';
+  }
+
+  showPDFViewer(element) {
+    const pdfLoader = document.getElementById('pdf-loader');
+    
+    // Hide loader
+    if (pdfLoader) {
+      pdfLoader.style.display = 'none';
+    }
+    
+    // Hide all other PDF viewers
+    this.hideAllPDFViewers();
+    
+    // Show the successful viewer
+    element.style.display = 'block';
+    
+    // Setup PDF link handling
+    this.setupPDFLinkHandling();
+  }
+
+  hideAllPDFViewers() {
+    const viewers = [
+      document.getElementById('pdf-embed'),
+      document.getElementById('pdf-object'),
+      document.getElementById('pdf-google-viewer'),
+      document.getElementById('pdf-iframe')
+    ];
+    
+    viewers.forEach(viewer => {
+      if (viewer) {
+        viewer.style.display = 'none';
+      }
+    });
   }
 
   showFallback() {

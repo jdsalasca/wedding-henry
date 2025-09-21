@@ -20,29 +20,40 @@
     <!-- PDF Viewer -->
     <main class="pdf-section">
       <div class="pdf-container">
-        <!-- Method 1: Direct PDF embed (works on most browsers) -->
+        <!-- Primary method: Embed -->
         <embed 
-          id="pdf-embed"
-          src="wedding-invitation.pdf" 
+          id="pdf-embed" 
+          src="wedding-invitation-compressed.pdf" 
           type="application/pdf" 
           class="pdf-viewer embed-viewer"
-          title="Invitación de boda Henry y Liliana">
+          style="display: none;">
         
-        <!-- Method 2: Object tag (alternative for some browsers) -->
+        <!-- Secondary method: Object -->
         <object 
-          id="pdf-object"
-          data="wedding-invitation.pdf" 
+          id="pdf-object" 
+          data="wedding-invitation-compressed.pdf" 
           type="application/pdf" 
           class="pdf-viewer object-viewer"
-          title="Invitación de boda Henry y Liliana">
+          style="display: none;">
+          <p>Tu navegador no puede mostrar PDFs. <a href="wedding-invitation-compressed.pdf">Descargar PDF</a></p>
         </object>
         
-        <!-- Method 3: Iframe (works when others don't) -->
+        <!-- Tertiary method: Google Docs Viewer -->
         <iframe 
-          id="pdf-iframe"
-          src="wedding-invitation.pdf" 
+          id="pdf-google-viewer" 
+          src="https://docs.google.com/viewer?url=http://localhost:8000/wedding-invitation-compressed.pdf&embedded=true" 
+          class="pdf-viewer google-viewer"
+          style="display: none;"
+          frameborder="0">
+        </iframe>
+        
+        <!-- Fallback method: Regular iframe -->
+        <iframe 
+          id="pdf-iframe" 
+          src="wedding-invitation-compressed.pdf" 
           class="pdf-viewer iframe-viewer"
-          title="Invitación de boda Henry y Liliana">
+          style="display: none;"
+          frameborder="0">
         </iframe>
         
         <!-- Loading State -->

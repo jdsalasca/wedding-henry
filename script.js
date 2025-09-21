@@ -350,6 +350,48 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initialize background music (optional)
     musicManager.init();
     
+    // Setup audio button functionality
+    const audioToggle = document.getElementById('audio-toggle');
+    const audioElement = document.getElementById('background-audio');
+    
+    if (audioToggle && audioElement) {
+        let isPlaying = false;
+        
+        audioToggle.addEventListener('click', async () => {
+            try {
+                if (isPlaying) {
+                    audioElement.pause();
+                    audioToggle.classList.remove('playing');
+                    audioToggle.querySelector('.audio-text').textContent = 'Activar música';
+                    isPlaying = false;
+                    console.log('Music paused');
+                } else {
+                    await audioElement.play();
+                    audioToggle.classList.add('playing');
+                    audioToggle.querySelector('.audio-text').textContent = 'Pausar música';
+                    isPlaying = true;
+                    console.log('Music started');
+                }
+            } catch (error) {
+                console.log('Error toggling music:', error);
+                // Fallback: show user-friendly message
+                audioToggle.querySelector('.audio-text').textContent = 'Error de audio';
+            }
+        });
+        
+        // Handle audio events
+        audioElement.addEventListener('ended', () => {
+            audioToggle.classList.remove('playing');
+            audioToggle.querySelector('.audio-text').textContent = 'Activar música';
+            isPlaying = false;
+        });
+        
+        audioElement.addEventListener('error', () => {
+            console.log('Audio loading error');
+            audioToggle.querySelector('.audio-text').textContent = 'Audio no disponible';
+        });
+    }
+    
     console.log('All systems initialized');
 });
 

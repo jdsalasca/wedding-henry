@@ -36,12 +36,12 @@ class WeddingInvitation {
     
     // Handle iframe load events
     pdfViewer.addEventListener('load', () => {
-      console.log('PDF viewer loaded successfully');
-      pdfLoader.style.display = 'none';
-      pdfViewer.style.display = 'block';
+      console.log('PDF viewer loaded');
       
-      // Set up link handling for popups
-      this.setupPDFLinkHandling();
+      // Check if Google Docs shows error message
+      setTimeout(() => {
+        this.checkGoogleDocsStatus();
+      }, 2000);
     });
     
     pdfViewer.addEventListener('error', () => {
@@ -49,29 +49,53 @@ class WeddingInvitation {
       this.showFallback();
     });
     
-    // Fallback timeout - if Google Docs doesn't load within 10 seconds
+    // Fallback timeout - if Google Docs doesn't load within 8 seconds
     setTimeout(() => {
       if (pdfLoader.style.display !== 'none') {
         console.warn('PDF viewer timeout, showing fallback');
         this.showFallback();
       }
-    }, 10000);
+    }, 8000);
+  }
+
+  checkGoogleDocsStatus() {
+    const pdfViewer = document.getElementById('pdf-viewer');
+    const pdfLoader = document.getElementById('pdf-loader');
     
-    // Test if iframe is working after a delay
-    setTimeout(() => {
-      try {
-        // Try to access iframe content (will fail if CORS blocked)
-        const iframeDoc = pdfViewer.contentDocument || pdfViewer.contentWindow.document;
-        if (!iframeDoc || iframeDoc.body.children.length === 0) {
-          console.warn('Iframe content not accessible, showing fallback');
+    try {
+      // Try to access iframe content to check for error messages
+      const iframeDoc = pdfViewer.contentDocument || pdfViewer.contentWindow.document;
+      
+      if (iframeDoc) {
+        const bodyText = iframeDoc.body ? iframeDoc.body.innerText.toLowerCase() : '';
+        
+        // Check for Google Docs error messages
+        if (bodyText.includes('couldn\'t preview file') || 
+            bodyText.includes('file is too large') ||
+            bodyText.includes('preview not available') ||
+            bodyText.includes('unable to preview')) {
+          console.warn('Google Docs Viewer shows error, using fallback');
           this.showFallback();
+          return;
         }
-      } catch (error) {
-        // CORS error is expected with Google Docs Viewer
-        // This is normal and doesn't mean it failed
-        console.log('Iframe access blocked by CORS (expected with Google Docs Viewer)');
+        
+        // If we get here, Google Docs is working
+        pdfLoader.style.display = 'none';
+        pdfViewer.style.display = 'block';
+        this.setupPDFLinkHandling();
+      } else {
+        // Iframe not accessible, but that's normal for Google Docs
+        pdfLoader.style.display = 'none';
+        pdfViewer.style.display = 'block';
+        this.setupPDFLinkHandling();
       }
-    }, 3000);
+    } catch (error) {
+      // CORS error is expected with Google Docs Viewer
+      // Assume it's working if we can't access it
+      pdfLoader.style.display = 'none';
+      pdfViewer.style.display = 'block';
+      this.setupPDFLinkHandling();
+    }
   }
 
   showFallback() {

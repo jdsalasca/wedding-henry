@@ -146,21 +146,54 @@ body {
   padding: 40px 20px;
   text-align: center;
   color: #666;
-  background: #f8f8f8;
+  background: linear-gradient(135deg, #f8f8f8 0%, #f0f0f0 100%);
   border-radius: 8px;
   margin: 20px;
+  border: 1px solid #e0e0e0;
+}
+
+.fallback-icon {
+  font-size: 3rem;
+  margin-bottom: 20px;
+  opacity: 0.8;
 }
 
 .fallback-content h3 {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 2rem;
+  font-size: 1.8rem;
   color: #2c2c2c;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+  font-weight: 400;
 }
 
-.fallback-content p {
+.couple-names {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem;
+  color: #2c2c2c;
   margin-bottom: 8px;
+  font-style: italic;
+  font-weight: 300;
+}
+
+.wedding-date {
   font-size: 1.1rem;
+  color: #666;
+  margin-bottom: 20px;
+  letter-spacing: 1px;
+}
+
+.fallback-message {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 25px;
+  max-width: 300px;
+}
+
+.fallback-note {
+  font-size: 0.9rem;
+  color: #888;
+  margin-top: 20px;
+  font-style: italic;
 }
 
 .fallback-actions {

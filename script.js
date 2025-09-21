@@ -30,13 +30,13 @@ class WeddingInvitation {
       if (this.isPlaying) {
         this.audioToggle.classList.add('playing');
         this.audioToggle.setAttribute('aria-pressed', 'true');
-        audioText.textContent = 'Pausar música';
-        audioIcon.textContent = '⏸️';
+        audioText.textContent = 'Desactivar música';
+        audioIcon.textContent = '♫';
       } else {
         this.audioToggle.classList.remove('playing');
         this.audioToggle.setAttribute('aria-pressed', 'false');
-        audioText.textContent = 'Reproducir música';
-        audioIcon.textContent = '🎵';
+        audioText.textContent = 'Activar música';
+        audioIcon.textContent = '♪';
       }
     };
 
@@ -131,7 +131,7 @@ class WeddingInvitation {
           // PDF loaded successfully, ensure interactive elements work
           this.enhancePDFInteractivity();
         }
-      } catch (error) {
+    } catch (error) {
         console.warn('PDF embed check failed:', error);
         pdfViewer.style.display = 'none';
         fallback.style.display = 'flex';
@@ -194,30 +194,33 @@ class WeddingInvitation {
       position: fixed;
       top: 20px;
       right: 20px;
-      background: #667eea;
+      background: #2c2c2c;
       color: white;
-      padding: 12px 20px;
-      border-radius: 8px;
-      font-size: 0.9rem;
+      padding: 10px 16px;
+      border-radius: 4px;
+      font-size: 0.85rem;
       z-index: 1000;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
       animation: slideIn 0.3s ease;
+      font-family: 'Crimson Text', serif;
     `;
-    notification.textContent = 'Haz clic en el botón para reproducir la música';
+    notification.textContent = 'Haz clic en el botón para activar la música';
     
     document.body.appendChild(notification);
     
     setTimeout(() => {
       notification.style.animation = 'slideOut 0.3s ease';
       setTimeout(() => notification.remove(), 300);
-    }, 3000);
+    }, 2500);
   }
 
   showAudioError() {
     const audioText = this.audioToggle.querySelector('.audio-text');
     if (audioText) {
       audioText.textContent = 'Error de audio';
-      this.audioToggle.style.background = '#e53e3e';
+      this.audioToggle.style.background = '#f5f5f5';
+      this.audioToggle.style.borderColor = '#ccc';
+      this.audioToggle.style.color = '#999';
     }
   }
 }

@@ -10,102 +10,52 @@ html {
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Crimson Text', Georgia, serif;
   line-height: 1.6;
-  color: #2d3748;
-  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+  color: #2c2c2c;
+  background: #fafafa;
   min-height: 100vh;
 }
 
 .container {
-  max-width: 1200px;
+  max-width: 800px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 40px 20px;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  gap: 40px;
 }
 
-/* Header Styles */
+/* Header Styles - Minimalist */
 .header {
   text-align: center;
-  padding: 40px 20px;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
-  margin-bottom: 30px;
-  position: relative;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  margin-bottom: 0;
 }
 
 .header h1 {
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(2.5rem, 8vw, 4rem);
-  font-weight: 600;
-  color: #2d3748;
-  margin-bottom: 10px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.5rem, 8vw, 3.5rem);
+  font-weight: 300;
+  color: #2c2c2c;
+  margin-bottom: 8px;
   letter-spacing: 1px;
+  font-style: italic;
 }
 
-.subtitle {
-  font-size: clamp(1rem, 4vw, 1.25rem);
-  color: #718096;
-  margin-bottom: 30px;
+.date {
+  font-size: clamp(0.9rem, 3vw, 1.1rem);
+  color: #666;
   font-weight: 400;
+  letter-spacing: 1px;
+  margin: 0;
 }
 
-/* Audio Button */
-.audio-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px 32px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  border-radius: 50px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-  position: relative;
-  overflow: hidden;
-}
-
-.audio-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
-}
-
-.audio-btn:active {
-  transform: translateY(0);
-}
-
-.audio-btn.playing {
-  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-  box-shadow: 0 8px 25px rgba(72, 187, 120, 0.3);
-}
-
-.audio-btn.playing:hover {
-  box-shadow: 0 12px 35px rgba(72, 187, 120, 0.4);
-}
-
-.audio-icon {
-  font-size: 1.2em;
-  transition: transform 0.3s ease;
-}
-
-.audio-btn.playing .audio-icon {
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-}
-
-/* PDF Section */
+/* PDF Section - Clean and Focused */
 .pdf-section {
   flex: 1;
   display: flex;
@@ -115,19 +65,20 @@ body {
 .pdf-container {
   flex: 1;
   background: white;
-  border-radius: 20px;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
   overflow: hidden;
   position: relative;
   min-height: 600px;
   display: flex;
   flex-direction: column;
+  border: 1px solid #e8e8e8;
 }
 
 .pdf-viewer {
   flex: 1;
   border: none;
-  border-radius: 20px;
+  border-radius: 8px;
   min-height: 600px;
   pointer-events: auto;
   user-select: none;
@@ -138,8 +89,8 @@ body {
 
 /* Ensure PDF interactive elements are clickable */
 .pdf-viewer:focus {
-  outline: 2px solid #667eea;
-  outline-offset: 2px;
+  outline: 1px solid #ccc;
+  outline-offset: 1px;
 }
 
 /* PDF embed specific styles for better interaction */
@@ -161,142 +112,183 @@ body {
   justify-content: center;
   padding: 60px 20px;
   text-align: center;
-  color: #718096;
+  color: #666;
 }
 
 .pdf-fallback p {
   margin-bottom: 20px;
-  font-size: 1.1rem;
+  font-size: 1rem;
 }
 
 .download-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 24px;
-  background: #667eea;
+  padding: 10px 20px;
+  background: #2c2c2c;
   color: white;
   text-decoration: none;
-  border-radius: 25px;
-  font-weight: 500;
-  transition: all 0.3s ease;
+  border-radius: 4px;
+  font-weight: 400;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
 }
 
 .download-btn:hover {
-  background: #5a67d8;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+  background: #444;
+  transform: translateY(-1px);
 }
 
-/* Footer */
+/* Footer - Minimalist Audio Control */
 .footer {
   text-align: center;
-  padding: 30px 20px;
-  margin-top: 30px;
+  padding: 0;
+  margin-top: 0;
 }
 
-.footer-text {
-  font-size: 1.1rem;
-  color: #718096;
-  font-weight: 500;
+.audio-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: transparent;
+  color: #666;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Crimson Text', serif;
+}
+
+.audio-btn:hover {
+  background: #f8f8f8;
+  border-color: #bbb;
+  color: #444;
+}
+
+.audio-btn:active {
+  transform: translateY(1px);
+}
+
+.audio-btn.playing {
+  background: #f0f0f0;
+  border-color: #999;
+  color: #333;
+}
+
+.audio-icon {
+  font-size: 1em;
+  transition: transform 0.2s ease;
+}
+
+.audio-btn.playing .audio-icon {
+  animation: subtlePulse 2s infinite;
+}
+
+@keyframes subtlePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
 }
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .container {
-    padding: 15px;
-  }
-  
-  .header {
     padding: 30px 15px;
-    margin-bottom: 20px;
+    gap: 30px;
   }
   
   .header h1 {
     font-size: clamp(2rem, 10vw, 3rem);
   }
   
-  .audio-btn {
-    padding: 14px 28px;
-    font-size: 0.95rem;
+  .date {
+    font-size: clamp(0.8rem, 4vw, 1rem);
   }
   
   .pdf-container {
     min-height: 500px;
-    border-radius: 15px;
+    border-radius: 6px;
   }
   
   .pdf-viewer {
-    border-radius: 15px;
+    border-radius: 6px;
     min-height: 500px;
+  }
+  
+  .audio-btn {
+    padding: 10px 16px;
+    font-size: 0.85rem;
   }
 }
 
 @media (max-width: 480px) {
   .container {
-    padding: 10px;
-  }
-  
-  .header {
-    padding: 25px 12px;
-  }
-  
-  .audio-btn {
-    padding: 12px 24px;
-    font-size: 0.9rem;
-  }
-  
-  .audio-icon {
-    font-size: 1.1em;
-  }
-  
-  .pdf-container {
-    min-height: 400px;
-    border-radius: 12px;
-  }
-  
-  .pdf-viewer {
-    border-radius: 12px;
-    min-height: 400px;
-  }
-}
-
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  body {
-    background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
-    color: #e2e8f0;
-  }
-  
-  .header {
-    background: rgba(45, 55, 72, 0.95);
+    padding: 20px 12px;
+    gap: 25px;
   }
   
   .header h1 {
-    color: #e2e8f0;
-  }
-  
-  .subtitle {
-    color: #a0aec0;
+    font-size: clamp(1.8rem, 12vw, 2.5rem);
   }
   
   .pdf-container {
-    background: #2d3748;
+    min-height: 400px;
+    border-radius: 4px;
   }
   
-  .footer-text {
-    color: #a0aec0;
+  .pdf-viewer {
+    border-radius: 4px;
+    min-height: 400px;
+  }
+  
+  .audio-btn {
+    padding: 8px 14px;
+    font-size: 0.8rem;
+  }
+}
+
+/* Dark mode support - Subtle */
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #f5f5f5;
+    color: #333;
+  }
+  
+  .header h1 {
+    color: #333;
+  }
+  
+  .date {
+    color: #666;
+  }
+  
+  .pdf-container {
+    background: white;
+    border-color: #e0e0e0;
+  }
+  
+  .audio-btn {
+    color: #666;
+    border-color: #ccc;
+  }
+  
+  .audio-btn:hover {
+    background: #f8f8f8;
+    border-color: #bbb;
+    color: #444;
   }
 }
 
 /* High contrast mode */
 @media (prefers-contrast: high) {
-  .audio-btn {
-    border: 2px solid currentColor;
+  .pdf-container {
+    border: 2px solid #000;
   }
   
-  .pdf-container {
-    border: 2px solid #2d3748;
+  .audio-btn {
+    border: 2px solid #000;
   }
 }
 
@@ -310,5 +302,17 @@ body {
   
   .audio-btn.playing .audio-icon {
     animation: none;
+  }
+}
+
+/* Print styles */
+@media print {
+  .audio-btn {
+    display: none;
+  }
+  
+  .pdf-container {
+    box-shadow: none;
+    border: 1px solid #000;
   }
 }

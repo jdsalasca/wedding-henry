@@ -3,27 +3,21 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Invitación Henry & Liliana</title>
+  <title>Henry & Liliana - Invitación de Boda</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="container">
-    <!-- Header Section -->
+    <!-- Minimal Header -->
     <header class="header">
       <h1>Henry & Liliana</h1>
-      <p class="subtitle">Con mucha alegría compartimos nuestra invitación</p>
-      
-      <!-- Audio Control -->
-      <button id="audio-toggle" class="audio-btn" type="button" aria-label="Reproducir música de fondo">
-        <span class="audio-icon">🎵</span>
-        <span class="audio-text">Reproducir música</span>
-      </button>
+      <p class="date">06 - DICIEMBRE - 2025</p>
     </header>
 
-    <!-- PDF Section -->
+    <!-- PDF Viewer -->
     <main class="pdf-section">
       <div class="pdf-container">
         <embed 
@@ -34,26 +28,28 @@
           class="pdf-viewer"
           title="Invitación de boda Henry y Liliana">
         
-        <!-- Fallback for browsers that don't support embed -->
+        <!-- Fallback -->
         <div class="pdf-fallback">
-          <p>Tu navegador no puede mostrar el PDF directamente.</p>
+          <p>Tu navegador no puede mostrar el PDF.</p>
           <a href="wedding-invitation.pdf" download class="download-btn">
-            📄 Descargar invitación
+            Descargar invitación
           </a>
         </div>
       </div>
     </main>
 
-    <!-- Footer -->
+    <!-- Minimal Footer -->
     <footer class="footer">
-      <p class="footer-text">¡Esperamos verte en nuestro día especial!</p>
+      <button id="audio-toggle" class="audio-btn" type="button" aria-label="Reproducir música de fondo">
+        <span class="audio-icon">♪</span>
+        <span class="audio-text">Activar música</span>
+      </button>
     </footer>
   </div>
 
   <!-- Audio Element -->
   <audio id="background-audio" loop preload="auto">
     <source src="wedding-song.mp3" type="audio/mpeg">
-    Tu navegador no soporta la reproducción de audio.
   </audio>
 
   <script src="script.js"></script>

@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://drive.google.com https://docs.google.com; object-src 'self' https: data: blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; frame-src 'self' https://drive.google.com https://docs.google.com https://unadvirtualedu-my.sharepoint.com; img-src 'self' https: data: blob:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https:;">
   <title>Henry & Liliana - Invitación de Boda</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,6 +18,10 @@
     <header class="header">
       <h1>Henry & Liliana</h1>
       <p class="date">06 - DICIEMBRE - 2025</p>
+      <button id="audio-toggle" class="audio-btn" type="button" aria-label="Reproducir música de fondo">
+        <span class="audio-icon">♪</span>
+        <span class="audio-text">Activar música</span>
+      </button>
     </header>
 
     <!-- PDF Viewer -->
@@ -124,7 +129,7 @@
                 <p>Te invitamos a celebrar nuestro día especial</p>
                 
                 <div class="fallback-actions">
-                    <a href="https://drive.google.com/file/d/1ziA2c2u-F0LqygVFbDEn7vk7vTVM7jU1/view" 
+                    <a href="https://drive.google.com/file/d/1ziA2c2u-F0LqygVFbDEn7vk7vTVM7jU1/preview" 
                        target="_blank" 
                        rel="noopener noreferrer" 
                        class="btn btn-primary">
@@ -143,10 +148,6 @@
 
     <!-- Minimal Footer -->
     <footer class="footer">
-      <button id="audio-toggle" class="audio-btn" type="button" aria-label="Reproducir música de fondo">
-        <span class="audio-icon">♪</span>
-        <span class="audio-text">Activar música</span>
-      </button>
     </footer>
   </div>
 

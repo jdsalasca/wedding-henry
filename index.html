@@ -8,6 +8,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <!-- PDF.js Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 <body>
   <div class="container">
@@ -20,66 +22,109 @@
     <!-- PDF Viewer -->
     <main class="pdf-section">
       <div class="pdf-container">
-        <!-- Primary method: Embed -->
-        <embed 
-          id="pdf-embed" 
-          src="wedding-invitation-compressed.pdf" 
-          type="application/pdf" 
-          class="pdf-viewer embed-viewer"
-          style="display: none;">
-        
-        <!-- Secondary method: Object -->
-        <object 
-          id="pdf-object" 
-          data="wedding-invitation-compressed.pdf" 
-          type="application/pdf" 
-          class="pdf-viewer object-viewer"
-          style="display: none;">
-          <p>Tu navegador no puede mostrar PDFs. <a href="wedding-invitation-compressed.pdf">Descargar PDF</a></p>
-        </object>
-        
-        <!-- Tertiary method: Google Docs Viewer -->
-        <iframe 
-          id="pdf-google-viewer" 
-          src="https://docs.google.com/viewer?url=http://localhost:8000/wedding-invitation-compressed.pdf&embedded=true" 
-          class="pdf-viewer google-viewer"
-          style="display: none;"
-          frameborder="0">
-        </iframe>
-        
-        <!-- Fallback method: Regular iframe -->
-        <iframe 
-          id="pdf-iframe" 
-          src="wedding-invitation-compressed.pdf" 
-          class="pdf-viewer iframe-viewer"
-          style="display: none;"
-          frameborder="0">
-        </iframe>
-        
         <!-- Loading State -->
         <div id="pdf-loader" class="pdf-loader">
           <div class="spinner"></div>
           <p>Cargando invitación...</p>
         </div>
-        
-        <!-- Fallback for unsupported browsers -->
-        <div class="pdf-fallback">
-          <div class="fallback-content">
-            <div class="fallback-icon">📄</div>
-            <h3>Invitación de Boda</h3>
-            <p class="couple-names">Henry & Liliana</p>
-            <p class="wedding-date">06 - DICIEMBRE - 2025</p>
-            <p class="fallback-message">Para una mejor experiencia, abre la invitación directamente:</p>
-            <div class="fallback-actions">
-              <a href="wedding-invitation.pdf" target="_blank" class="download-btn primary">
-                📖 Ver invitación completa
-              </a>
-              <a href="wedding-invitation.pdf" download class="download-btn secondary">
-                💾 Descargar PDF
-              </a>
+
+        <!-- Method 1: OneDrive/SharePoint Direct Link (Best for mobile) -->
+        <div id="onedrive-viewer" class="pdf-viewer onedrive-viewer" style="display: none;">
+            <div class="onedrive-content">
+                <div class="onedrive-preview">
+                    <h3>📄 Invitación de Boda</h3>
+                    <p>Henry & Liliana - 06 de Diciembre 2025</p>
+                    <p class="onedrive-message">Para la mejor experiencia, abre la invitación en OneDrive:</p>
+                    <a href="https://unadvirtualedu-my.sharepoint.com/:b:/g/personal/jdsalasc_unadvirtual_edu_co/EYCaQ0i1M2NKntzGHJ5jbrsBFcr9-G8eiTNxuDH8MUyfKg?e=1Nn2jG" 
+                       target="_blank" 
+                       rel="noopener noreferrer" 
+                       class="onedrive-btn">
+                        🔗 Ver Invitación Completa
+                    </a>
+                    <p class="onedrive-note">Los enlaces interactivos funcionarán perfectamente</p>
+                </div>
             </div>
-            <p class="fallback-note">Los enlaces dentro de la invitación funcionarán correctamente</p>
-          </div>
+        </div>
+
+        <!-- Method 1: Google Drive Viewer (Best for mobile) -->
+        <iframe 
+            id="google-drive-viewer" 
+            class="pdf-viewer google-drive-viewer" 
+            src="https://drive.google.com/file/d/1encR1w7BVhKZHstGv65ZkXGfxLvx91km/preview"
+            style="display: none;"
+            title="Invitación de Boda - Henry & Liliana"
+            allowfullscreen>
+        </iframe>
+
+        <!-- Method 2: PDF.js Viewer -->
+        <div id="pdfjs-viewer" class="pdf-viewer pdfjs-viewer" style="display: none;">
+            <div class="pdf-controls">
+                <button id="prev-page" class="pdf-btn">◀ Anterior</button>
+                <span id="page-info">Página 1 de 1</span>
+                <button id="next-page" class="pdf-btn">Siguiente ▶</button>
+            </div>
+            <canvas id="pdf-canvas"></canvas>
+        </div>
+
+        <!-- Method 3: Embed Viewer -->
+        <embed 
+            id="embed-viewer" 
+            class="pdf-viewer embed-viewer" 
+            src="wedding-invitation-compressed.pdf" 
+            type="application/pdf" 
+            style="display: none;"
+            title="Invitación de Boda">
+
+        <!-- Method 4: Object Viewer -->
+        <object 
+            id="object-viewer" 
+            class="pdf-viewer object-viewer" 
+            data="wedding-invitation-compressed.pdf" 
+            type="application/pdf" 
+            style="display: none;"
+            title="Invitación de Boda">
+            <p>Tu navegador no puede mostrar PDFs. <a href="wedding-invitation-compressed.pdf" target="_blank">Descargar PDF</a></p>
+        </object>
+
+        <!-- Method 5: Google Docs Viewer (Fallback) -->
+        <iframe 
+            id="google-docs-viewer" 
+            class="pdf-viewer google-docs-viewer" 
+            src="https://docs.google.com/viewerng/viewer?url=http://localhost:8000/wedding-invitation-compressed.pdf&embedded=true"
+            style="display: none;"
+            title="Invitación de Boda - Google Docs Viewer">
+        </iframe>
+
+        <!-- Method 6: Iframe Viewer (Last resort) -->
+        <iframe 
+            id="iframe-viewer" 
+            class="pdf-viewer iframe-viewer" 
+            src="wedding-invitation-compressed.pdf" 
+            style="display: none;"
+            title="Invitación de Boda">
+        </iframe>
+
+        <!-- Fallback Content -->
+        <div class="pdf-fallback" style="display: none;">
+            <div class="fallback-content">
+                <h2>Henry & Liliana</h2>
+                <p class="date">06 - DICIEMBRE - 2025</p>
+                <p>Te invitamos a celebrar nuestro día especial</p>
+                
+                <div class="fallback-actions">
+                    <a href="https://drive.google.com/file/d/1encR1w7BVhKZHstGv65ZkXGfxLvx91km/view" 
+                       target="_blank" 
+                       rel="noopener noreferrer" 
+                       class="btn btn-primary">
+                        Ver Invitación en Google Drive
+                    </a>
+                    <a href="wedding-invitation-compressed.pdf" 
+                       target="_blank" 
+                       class="btn btn-secondary">
+                        Descargar PDF
+                    </a>
+                </div>
+            </div>
         </div>
       </div>
     </main>

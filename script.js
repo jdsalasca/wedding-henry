@@ -10,8 +10,111 @@ class WeddingInvitation {
 
   init() {
     this.setupAudio();
-    this.setupFallback();
+    this.setupPDFViewer();
     this.setupAccessibility();
+  }
+
+  setupPDFViewer() {
+    const pdfViewer = document.getElementById('pdf-viewer');
+    const pdfLoader = document.getElementById('pdf-loader');
+    const fallback = document.querySelector('.pdf-fallback');
+    
+    if (!pdfViewer || !pdfLoader || !fallback) {
+      console.warn('PDF viewer elements not found');
+      return;
+    }
+
+    // Get the current domain for the PDF URL
+    const currentDomain = window.location.origin;
+    const pdfUrl = `${currentDomain}/wedding-invitation.pdf`;
+    
+    // Google Docs Viewer URL with mobile-optimized parameters
+    const googleViewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(pdfUrl)}&embedded=true&chrome=false&navpanes=false&toolbar=false&statusbar=false&messages=false&scrollbar=false`;
+    
+    // Set the iframe source
+    pdfViewer.src = googleViewerUrl;
+    
+    // Handle iframe load events
+    pdfViewer.addEventListener('load', () => {
+      console.log('PDF viewer loaded successfully');
+      pdfLoader.style.display = 'none';
+      pdfViewer.style.display = 'block';
+      
+      // Set up link handling for popups
+      this.setupPDFLinkHandling();
+    });
+    
+    pdfViewer.addEventListener('error', () => {
+      console.warn('PDF viewer failed to load');
+      this.showFallback();
+    });
+    
+    // Fallback timeout - if Google Docs doesn't load within 10 seconds
+    setTimeout(() => {
+      if (pdfLoader.style.display !== 'none') {
+        console.warn('PDF viewer timeout, showing fallback');
+        this.showFallback();
+      }
+    }, 10000);
+    
+    // Test if iframe is working after a delay
+    setTimeout(() => {
+      try {
+        // Try to access iframe content (will fail if CORS blocked)
+        const iframeDoc = pdfViewer.contentDocument || pdfViewer.contentWindow.document;
+        if (!iframeDoc || iframeDoc.body.children.length === 0) {
+          console.warn('Iframe content not accessible, showing fallback');
+          this.showFallback();
+        }
+      } catch (error) {
+        // CORS error is expected with Google Docs Viewer
+        // This is normal and doesn't mean it failed
+        console.log('Iframe access blocked by CORS (expected with Google Docs Viewer)');
+      }
+    }, 3000);
+  }
+
+  showFallback() {
+    const pdfViewer = document.getElementById('pdf-viewer');
+    const pdfLoader = document.getElementById('pdf-loader');
+    const fallback = document.querySelector('.pdf-fallback');
+    
+    if (pdfViewer) pdfViewer.style.display = 'none';
+    if (pdfLoader) pdfLoader.style.display = 'none';
+    if (fallback) fallback.style.display = 'flex';
+  }
+
+  setupPDFLinkHandling() {
+    // Handle messages from the iframe (Google Docs Viewer)
+    window.addEventListener('message', (event) => {
+      // Google Docs Viewer sends messages about link clicks
+      if (event.data && event.data.type === 'link-click') {
+        this.openLinkInPopup(event.data.url);
+      }
+    });
+
+    // Also handle clicks on the document that might be from PDF links
+    document.addEventListener('click', (e) => {
+      // Check if the click target is a link
+      if (e.target.tagName === 'A' && e.target.href) {
+        e.preventDefault();
+        this.openLinkInPopup(e.target.href);
+      }
+    });
+  }
+
+  openLinkInPopup(url) {
+    // Open link in popup window
+    const popup = window.open(
+      url, 
+      '_blank', 
+      'width=800,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no'
+    );
+    
+    if (!popup) {
+      // Fallback if popup is blocked
+      window.open(url, '_blank');
+    }
   }
 
   setupAudio() {
@@ -113,132 +216,6 @@ class WeddingInvitation {
     document.addEventListener('keydown', tryAutoPlay, { once: true });
   }
 
-  setupFallback() {
-    // Check if PDF embed/iframe is supported
-    const desktopPdf = document.getElementById('desktop-pdf');
-    const mobilePdf = document.getElementById('mobile-pdf');
-    const fallback = document.querySelector('.pdf-fallback');
-    
-    if (!desktopPdf || !mobilePdf || !fallback) return;
-
-    // Detect if we're on mobile
-    const isMobile = this.isMobileDevice();
-    
-    if (isMobile) {
-      // On mobile, use iframe
-      desktopPdf.style.display = 'none';
-      mobilePdf.style.display = 'block';
-      
-      // Test if iframe worked
-      setTimeout(() => {
-        try {
-          if (mobilePdf.offsetHeight < 100) {
-            mobilePdf.style.display = 'none';
-            fallback.style.display = 'flex';
-          } else {
-            this.enhancePDFInteractivity();
-          }
-    } catch (error) {
-          console.warn('Mobile PDF iframe check failed:', error);
-          mobilePdf.style.display = 'none';
-          fallback.style.display = 'flex';
-        }
-      }, 2000);
-    } else {
-      // On desktop, use embed
-      desktopPdf.style.display = 'block';
-      mobilePdf.style.display = 'none';
-      
-      // Test if embed worked
-      setTimeout(() => {
-        try {
-          if (desktopPdf.offsetHeight < 100) {
-            desktopPdf.style.display = 'none';
-            fallback.style.display = 'flex';
-          } else {
-            this.enhancePDFInteractivity();
-          }
-        } catch (error) {
-          console.warn('Desktop PDF embed check failed:', error);
-          desktopPdf.style.display = 'none';
-          fallback.style.display = 'flex';
-        }
-      }, 2000);
-    }
-  }
-
-  isMobileDevice() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
-           window.innerWidth <= 768 ||
-           ('ontouchstart' in window && window.innerWidth <= 1024);
-  }
-
-  enhancePDFInteractivity() {
-    // Ensure PDF interactive elements work properly
-    const desktopPdf = document.getElementById('desktop-pdf');
-    const mobilePdf = document.getElementById('mobile-pdf');
-    const activePdf = desktopPdf.style.display !== 'none' ? desktopPdf : mobilePdf;
-    
-    if (!activePdf) return;
-
-    // Add event listeners to handle PDF interactions
-    activePdf.addEventListener('load', () => {
-      console.log('PDF loaded with interactive elements');
-    });
-
-    // Handle PDF link clicks that might not work in embed/iframe
-    activePdf.addEventListener('click', (e) => {
-      // Let the PDF handle its own interactions
-      // This is just a fallback for edge cases
-    });
-
-    // Ensure the PDF gets focus for keyboard navigation
-    activePdf.setAttribute('tabindex', '0');
-    
-    // Add some styling to ensure interactive elements are visible
-    activePdf.style.cssText += `
-      pointer-events: auto !important;
-      user-select: none;
-    `;
-
-    // Handle external links in PDF to open in popup windows
-    this.setupPDFLinkHandling();
-  }
-
-  setupPDFLinkHandling() {
-    // This function will be called when the PDF loads
-    // We'll use postMessage to communicate with the PDF content
-    window.addEventListener('message', (event) => {
-      // Handle messages from PDF iframe
-      if (event.data && event.data.type === 'pdf-link-click') {
-        this.openLinkInPopup(event.data.url);
-      }
-    });
-
-    // Also handle clicks on the document that might be from PDF links
-    document.addEventListener('click', (e) => {
-      // Check if the click target is a link
-      if (e.target.tagName === 'A' && e.target.href) {
-        e.preventDefault();
-        this.openLinkInPopup(e.target.href);
-      }
-    });
-  }
-
-  openLinkInPopup(url) {
-    // Open link in popup window
-    const popup = window.open(
-      url, 
-      '_blank', 
-      'width=800,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no'
-    );
-    
-    if (!popup) {
-      // Fallback if popup is blocked
-      window.open(url, '_blank');
-    }
-  }
-
   setupAccessibility() {
     // Keyboard navigation
     document.addEventListener('keydown', (e) => {
@@ -251,7 +228,7 @@ class WeddingInvitation {
 
     // Focus management
     this.audioToggle.addEventListener('focus', () => {
-      this.audioToggle.style.outline = '3px solid #667eea';
+      this.audioToggle.style.outline = '3px solid #2c2c2c';
       this.audioToggle.style.outlineOffset = '2px';
     });
 
@@ -341,16 +318,6 @@ style.textContent = `
   @keyframes slideOut {
     from { transform: translateX(0); opacity: 1; }
     to { transform: translateX(100%); opacity: 0; }
-  }
-  
-  .mobile-device .pdf-viewer {
-    min-height: 400px !important;
-  }
-  
-  @media (max-width: 768px) {
-    .mobile-device .pdf-viewer {
-      min-height: 350px !important;
-    }
   }
 `;
 document.head.appendChild(style);

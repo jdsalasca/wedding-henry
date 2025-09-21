@@ -75,43 +75,66 @@ body {
   border: 1px solid #e8e8e8;
 }
 
-.pdf-viewer {
+/* PDF.js Canvas Container */
+.pdf-canvas-container {
+  flex: 1;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 20px;
+  min-height: 600px;
+  overflow: auto;
+}
+
+.pdf-canvas {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.pdf-annotations {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+}
+
+/* PDF Loader */
+.pdf-loader {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: #666;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #2c2c2c;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Google Docs Viewer */
+.google-viewer {
   flex: 1;
   border: none;
   border-radius: 8px;
   min-height: 600px;
-  pointer-events: auto;
-  user-select: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-}
-
-/* Desktop PDF Viewer */
-.desktop-viewer {
-  display: block;
-}
-
-/* Mobile PDF Viewer */
-.mobile-viewer {
   display: none;
-}
-
-/* Ensure PDF interactive elements are clickable */
-.pdf-viewer:focus {
-  outline: 1px solid #ccc;
-  outline-offset: 1px;
-}
-
-/* PDF embed specific styles for better interaction */
-.pdf-container embed {
-  pointer-events: auto !important;
-}
-
-/* Ensure buttons and links in PDF are visible and clickable */
-.pdf-viewer object,
-.pdf-viewer embed {
-  pointer-events: auto !important;
 }
 
 /* Fallback styles */
@@ -120,33 +143,66 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px 20px;
+  padding: 40px 20px;
   text-align: center;
   color: #666;
+  background: #f8f8f8;
+  border-radius: 8px;
+  margin: 20px;
 }
 
-.pdf-fallback p {
-  margin-bottom: 20px;
-  font-size: 1rem;
+.fallback-content h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2rem;
+  color: #2c2c2c;
+  margin-bottom: 8px;
+}
+
+.fallback-content p {
+  margin-bottom: 8px;
+  font-size: 1.1rem;
+}
+
+.fallback-actions {
+  margin-top: 30px;
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .download-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 20px;
-  background: #2c2c2c;
-  color: white;
+  padding: 12px 20px;
   text-decoration: none;
   border-radius: 4px;
   font-weight: 400;
   transition: all 0.2s ease;
   font-size: 0.9rem;
+  font-family: 'Crimson Text', serif;
 }
 
-.download-btn:hover {
+.download-btn.primary {
+  background: #2c2c2c;
+  color: white;
+}
+
+.download-btn.primary:hover {
   background: #444;
   transform: translateY(-1px);
+}
+
+.download-btn.secondary {
+  background: transparent;
+  color: #2c2c2c;
+  border: 1px solid #ddd;
+}
+
+.download-btn.secondary:hover {
+  background: #f0f0f0;
+  border-color: #bbb;
 }
 
 /* Footer - Minimalist Audio Control */
@@ -222,18 +278,29 @@ body {
     border-radius: 6px;
   }
   
-  .pdf-viewer {
-    border-radius: 6px;
+  .pdf-canvas-container {
     min-height: 500px;
+    padding: 15px;
   }
   
-  /* Switch to mobile PDF viewer on mobile */
-  .desktop-viewer {
-    display: none;
+  .pdf-canvas {
+    border-radius: 4px;
   }
   
-  .mobile-viewer {
-    display: block;
+  .google-viewer {
+    min-height: 500px;
+    border-radius: 6px;
+  }
+  
+  .fallback-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .download-btn {
+    width: 100%;
+    max-width: 250px;
+    justify-content: center;
   }
   
   .audio-btn {
@@ -257,18 +324,18 @@ body {
     border-radius: 4px;
   }
   
-  .pdf-viewer {
-    border-radius: 4px;
+  .pdf-canvas-container {
     min-height: 400px;
+    padding: 10px;
   }
   
-  /* Ensure mobile viewer is active on small screens */
-  .desktop-viewer {
-    display: none;
+  .pdf-canvas {
+    border-radius: 4px;
   }
   
-  .mobile-viewer {
-    display: block;
+  .google-viewer {
+    min-height: 400px;
+    border-radius: 4px;
   }
   
   .audio-btn {
@@ -295,6 +362,10 @@ body {
   .pdf-container {
     background: white;
     border-color: #e0e0e0;
+  }
+  
+  .pdf-fallback {
+    background: #f0f0f0;
   }
   
   .audio-btn {

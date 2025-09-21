@@ -20,32 +20,36 @@
     <!-- PDF Viewer -->
     <main class="pdf-section">
       <div class="pdf-container">
-        <!-- Desktop PDF Viewer -->
-        <embed 
-          id="desktop-pdf"
-          src="wedding-invitation.pdf" 
-          type="application/pdf" 
-          width="100%" 
-          height="100%"
-          class="pdf-viewer desktop-viewer"
-          title="Invitación de boda Henry y Liliana">
-        
-        <!-- Mobile PDF Viewer -->
+        <!-- Google Docs Viewer - Main Solution -->
         <iframe 
-          id="mobile-pdf"
-          src="wedding-invitation.pdf#toolbar=0&navpanes=0&scrollbar=0&statusbar=0&messages=0&scrollbar=0"
-          width="100%" 
-          height="100%"
-          class="pdf-viewer mobile-viewer"
-          title="Invitación de boda Henry y Liliana">
+          id="pdf-viewer"
+          src=""
+          class="pdf-viewer"
+          title="Invitación de boda Henry y Liliana"
+          allowfullscreen>
         </iframe>
         
-        <!-- Fallback -->
+        <!-- Loading State -->
+        <div id="pdf-loader" class="pdf-loader">
+          <div class="spinner"></div>
+          <p>Cargando invitación...</p>
+        </div>
+        
+        <!-- Fallback for unsupported browsers -->
         <div class="pdf-fallback">
-          <p>Tu navegador no puede mostrar el PDF directamente.</p>
-          <a href="wedding-invitation.pdf" target="_blank" class="download-btn">
-            📄 Abrir invitación
-          </a>
+          <div class="fallback-content">
+            <h3>Invitación de Boda</h3>
+            <p>Henry & Liliana</p>
+            <p>06 - DICIEMBRE - 2025</p>
+            <div class="fallback-actions">
+              <a href="wedding-invitation.pdf" target="_blank" class="download-btn primary">
+                📄 Ver invitación
+              </a>
+              <a href="wedding-invitation.pdf" download class="download-btn secondary">
+                💾 Descargar PDF
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </main>
